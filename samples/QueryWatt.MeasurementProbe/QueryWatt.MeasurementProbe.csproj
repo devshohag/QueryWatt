@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/QueryWatt.Core/QueryWatt.Core.csproj" />
+    <ProjectReference Include="../../src/QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" />
+  </ItemGroup>
+</Project>

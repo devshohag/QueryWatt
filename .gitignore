@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+TestResults/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+*.trx
+querywatt-baseline.json
+appsettings.Local.json
+*-result.json
+*.sql.bak
+/querywatt/
