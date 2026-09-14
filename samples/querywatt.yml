@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+connection:
+  environmentVariable: QUERYWATT_CONNECTION_STRING
+
+measurement:
+  warmupRuns: 3
+  measuredRuns: 20
+  commandTimeoutSeconds: 60
+
+queries:
+  - name: seek
+    file: TicketingDatabase/queries/seek-parameterized.sql
+    commandType: text
+    parameters:
+      - name: CustomerId
+        type: int32
+        value: "417"
+
+  - name: scan
+    file: TicketingDatabase/queries/scan.sql
+    commandType: text
