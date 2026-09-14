@@ -8,6 +8,7 @@ public sealed class QueryWattConfiguration
     public EnvironmentConfiguration Environment { get; set; } = new();
     public MeasurementConfiguration Measurement { get; set; } = new();
     public ThresholdsConfiguration Thresholds { get; set; } = new();
+    public EnergyConfiguration Energy { get; set; } = new();
     public List<QueryConfiguration> Queries { get; set; } = [];
 }
 
@@ -48,6 +49,12 @@ public sealed class MetricThresholdConfiguration
     public double Absolute { get; set; }
 }
 
+public sealed class EnergyConfiguration
+{
+    public bool Enabled { get; set; }
+    public double? WattsPerBusyCore { get; set; }
+}
+
 public sealed class QueryConfiguration
 {
     public string Name { get; set; } = string.Empty;
@@ -55,6 +62,7 @@ public sealed class QueryConfiguration
     public string CommandType { get; set; } = "text";
     public List<ParameterConfiguration> Parameters { get; set; } = [];
     public ThresholdsConfiguration? Thresholds { get; set; }
+    public double? ExecutionsPerDay { get; set; }
 }
 
 public sealed class ParameterConfiguration
@@ -74,6 +82,7 @@ public sealed record ResolvedQueryWattConfiguration(
     string? ContainerImageTag,
     IReadOnlyList<string> SeedScriptPaths,
     IReadOnlyList<string> TableNames,
+    ResolvedEnergyConfiguration Energy,
     IReadOnlyList<ResolvedQueryConfiguration> Queries)
 {
     public IReadOnlyList<QueryWatt.Core.MeasurementRequest> Requests =>
@@ -82,4 +91,9 @@ public sealed record ResolvedQueryWattConfiguration(
 
 public sealed record ResolvedQueryConfiguration(
     QueryWatt.Core.MeasurementRequest Request,
-    QueryWatt.Core.QueryThresholds Thresholds);
+    QueryWatt.Core.QueryThresholds Thresholds,
+    double? ExecutionsPerDay);
+
+public sealed record ResolvedEnergyConfiguration(
+    bool Enabled,
+    double? WattsPerBusyCore);

@@ -114,6 +114,33 @@ public sealed class QueryWattConfigurationLoaderTests
         Assert.Contains("Invalid YAML", exception.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Load_RejectsEnabledEnergyWithoutCoefficient()
+    {
+        using var fixture = new ConfigurationFixture();
+        fixture.WriteQuery("query.sql", "SELECT 1");
+        fixture.WriteQuery("seed.sql", "SELECT 1");
+        var configPath = fixture.WriteConfiguration("""
+            schemaVersion: 1
+            environment:
+              seedScripts:
+                - seed.sql
+              tables:
+                - dbo.TestTable
+            energy:
+              enabled: true
+              wattsPerBusyCore: null
+            queries:
+              - name: query
+                file: query.sql
+            """);
+
+        var exception = Assert.Throws<ConfigurationException>(() =>
+            new QueryWattConfigurationLoader().Load(configPath));
+
+        Assert.Contains("wattsPerBusyCore", exception.Message, StringComparison.Ordinal);
+    }
+
     private sealed class ConfigurationFixture : IDisposable
     {
         private readonly string _root = Path.Combine(

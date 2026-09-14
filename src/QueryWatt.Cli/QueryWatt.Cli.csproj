@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>querywatt</ToolCommandName>
+    <PackageId>QueryWatt</PackageId>
+    <Version>0.4.0-preview.1</Version>
+    <Authors>QueryWatt contributors</Authors>
+    <Description>Catch SQL Server efficiency regressions before they reach production.</Description>
+    <PackageTags>sql-server;performance;regression;ci;dotnet-tool</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageOutputPath>../../artifacts</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryWatt.Baselines/QueryWatt.Baselines.csproj" PrivateAssets="all" />
+    <ProjectReference Include="../QueryWatt.Configuration/QueryWatt.Configuration.csproj" PrivateAssets="all" />
+    <ProjectReference Include="../QueryWatt.Reporting/QueryWatt.Reporting.csproj" PrivateAssets="all" />
+    <ProjectReference Include="../QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <Target
+      Name="IncludeProjectReferenceAssemblies"
+      DependsOnTargets="BuildOnlySettings;ResolveReferences"
+      BeforeTargets="_GetBuildOutputFilesWithTfm">
+    <ItemGroup>
+      <BuildOutputInPackage
+          Include="@(ReferenceCopyLocalPaths)"
+          Condition="'%(ReferenceCopyLocalPaths.ReferenceSourceTarget)' == 'ProjectReference'" />
+    </ItemGroup>
+  </Target>
+</Project>

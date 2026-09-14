@@ -27,10 +27,15 @@ thresholds:
     percent: 25
     absolute: 1000
 
+energy:
+  enabled: false
+  wattsPerBusyCore: null
+
 queries:
   - name: customer-seek
     file: TicketingDatabase/queries/seek-parameterized.sql
     commandType: text
+    executionsPerDay: 18420
     parameters:
       - name: CustomerId
         type: int32
@@ -67,6 +72,11 @@ Every gating metric has both `percent` and `absolute`; a regression requires
 both values to be exceeded. Per-query `thresholds` replaces the global block
 for that query. CPU and duration have no default threshold.
 
+Energy is off by default and no default coefficient ships. When enabled,
+`wattsPerBusyCore` must be a finite positive value supplied by the user.
+`executionsPerDay` is optional per query and is required only for daily resource
+and Wh estimates. See [`energy-model.md`](energy-model.md).
+
 ## Statistics
 
 Each metric retains its ordered raw values and reports minimum, raw median,
@@ -76,4 +86,4 @@ numbers are listed.
 
 Quartiles and percentiles use R-7 linear interpolation. p95 is `null` for
 20–49 runs and is produced only for 50 or more measured runs. Future regression
-decisions will use the filtered median; Week 2 does not make a pass/fail verdict.
+decisions use the filtered median.

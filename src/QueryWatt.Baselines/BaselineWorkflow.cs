@@ -66,15 +66,50 @@ public sealed class BaselineWorkflow(
             {
                 CompareMetric(
                     "logicalReads",
-                    baselineQuery.Summary.LogicalReads.FilteredMedian,
-                    currentSummary.LogicalReads.FilteredMedian,
+                    baselineQuery.Summary.LogicalReads,
+                    currentSummary.LogicalReads,
                     baselineQuery.Thresholds.LogicalReads,
                     canGate: true,
                     note: null),
                 CompareMetric(
+                    "lobLogicalReads",
+                    baselineQuery.Summary.LobLogicalReads,
+                    currentSummary.LobLogicalReads,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational"),
+                CompareMetric(
+                    "physicalReads",
+                    baselineQuery.Summary.PhysicalReads,
+                    currentSummary.PhysicalReads,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational"),
+                CompareMetric(
+                    "readAheadReads",
+                    baselineQuery.Summary.ReadAheadReads,
+                    currentSummary.ReadAheadReads,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational"),
+                CompareMetric(
+                    "lobPhysicalReads",
+                    baselineQuery.Summary.LobPhysicalReads,
+                    currentSummary.LobPhysicalReads,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational"),
+                CompareMetric(
+                    "lobReadAheadReads",
+                    baselineQuery.Summary.LobReadAheadReads,
+                    currentSummary.LobReadAheadReads,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational"),
+                CompareMetric(
                     "cpuTimeMilliseconds",
-                    baselineQuery.Summary.CpuTimeMilliseconds.FilteredMedian,
-                    currentSummary.CpuTimeMilliseconds.FilteredMedian,
+                    baselineQuery.Summary.CpuTimeMilliseconds,
+                    currentSummary.CpuTimeMilliseconds,
                     baselineQuery.Thresholds.CpuTimeMilliseconds,
                     canGate: baselineQuery.Summary.CpuTimeMilliseconds.FilteredMedian >= 10,
                     note: baselineQuery.Summary.CpuTimeMilliseconds.FilteredMedian < 10
@@ -82,11 +117,20 @@ public sealed class BaselineWorkflow(
                         : null),
                 CompareMetric(
                     "clientDurationMilliseconds",
-                    baselineQuery.Summary.ClientDurationMilliseconds.FilteredMedian,
-                    currentSummary.ClientDurationMilliseconds.FilteredMedian,
+                    baselineQuery.Summary.ClientDurationMilliseconds,
+                    currentSummary.ClientDurationMilliseconds,
                     baselineQuery.Thresholds.ClientDurationMilliseconds,
                     canGate: true,
-                    note: null)
+                    note: baselineQuery.Thresholds.ClientDurationMilliseconds is null
+                        ? "informational"
+                        : null),
+                CompareMetric(
+                    "rowsReturned",
+                    baselineQuery.Summary.RowsReturned,
+                    currentSummary.RowsReturned,
+                    threshold: null,
+                    canGate: false,
+                    note: "informational")
             };
 
             var planChanged = !baselineQuery.PlanFingerprints.SequenceEqual(
@@ -212,12 +256,14 @@ public sealed class BaselineWorkflow(
 
     private static MetricVerificationResult CompareMetric(
         string name,
-        double baseline,
-        double current,
+        MetricSummary baselineSummary,
+        MetricSummary currentSummary,
         RegressionThreshold? threshold,
         bool canGate,
         string? note)
     {
+        var baseline = baselineSummary.FilteredMedian;
+        var current = currentSummary.FilteredMedian;
         var absoluteChange = current - baseline;
         double? percentChange = baseline == 0
             ? null
@@ -239,7 +285,11 @@ public sealed class BaselineWorkflow(
             percentChange,
             threshold,
             regressed,
-            note);
+            note,
+            baselineSummary.OutlierRunNumbers.Count,
+            currentSummary.OutlierRunNumbers.Count,
+            baselineSummary.P95,
+            currentSummary.P95);
     }
 }
 
@@ -261,4 +311,8 @@ public sealed record MetricVerificationResult(
     double? PercentChange,
     RegressionThreshold? Threshold,
     bool Regressed,
-    string? Note);
+    string? Note,
+    int BaselineOutlierCount,
+    int CurrentOutlierCount,
+    double? BaselineP95,
+    double? CurrentP95);

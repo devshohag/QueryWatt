@@ -29,10 +29,15 @@ thresholds:
   #   percent: 30
   #   absolute: 50
 
+energy:
+  enabled: false
+  wattsPerBusyCore: null
+
 queries:
   - name: seek
     file: TicketingDatabase/queries/seek-parameterized.sql
     commandType: text
+    executionsPerDay: 18420
     parameters:
       - name: CustomerId
         type: int32

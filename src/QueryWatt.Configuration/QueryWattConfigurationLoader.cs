@@ -62,6 +62,9 @@ public sealed class QueryWattConfigurationLoader
             configuration.Environment.ContainerImageTag,
             seedScriptPaths,
             configuration.Environment.Tables.ToArray(),
+            new ResolvedEnergyConfiguration(
+                configuration.Energy.Enabled,
+                configuration.Energy.WattsPerBusyCore),
             requests);
     }
 
@@ -109,6 +112,20 @@ public sealed class QueryWattConfigurationLoader
         if (configuration.Thresholds is null)
         {
             throw new ConfigurationException("thresholds is required.");
+        }
+
+        if (configuration.Energy is null)
+        {
+            throw new ConfigurationException("energy is required.");
+        }
+
+        if (configuration.Energy.Enabled
+            && (configuration.Energy.WattsPerBusyCore is null
+                || !double.IsFinite(configuration.Energy.WattsPerBusyCore.Value)
+                || configuration.Energy.WattsPerBusyCore <= 0))
+        {
+            throw new ConfigurationException(
+                "energy.wattsPerBusyCore must be a finite positive number when energy is enabled.");
         }
 
         if (configuration.Queries is null || configuration.Queries.Count == 0)
@@ -208,8 +225,19 @@ public sealed class QueryWattConfigurationLoader
                 exception);
         }
 
+        if (query.ExecutionsPerDay is not null
+            && (!double.IsFinite(query.ExecutionsPerDay.Value)
+                || query.ExecutionsPerDay <= 0))
+        {
+            throw new ConfigurationException(
+                $"Query '{query.Name}' executionsPerDay must be a finite positive number.");
+        }
+
         var resolvedThresholds = ResolveThresholds(query.Name, thresholds);
-        return new ResolvedQueryConfiguration(request, resolvedThresholds);
+        return new ResolvedQueryConfiguration(
+            request,
+            resolvedThresholds,
+            query.ExecutionsPerDay);
     }
 
     private static QueryThresholds ResolveThresholds(
