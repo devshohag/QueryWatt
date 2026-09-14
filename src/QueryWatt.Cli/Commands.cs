@@ -50,26 +50,31 @@ public sealed class InitCommand : Command<InitSettings>
     }
 }
 
-public sealed class BaselineCommand : AsyncCommand<MeasurementCommandSettings>
+public sealed class BaselineCommand : AsyncCommand<BaselineCommandSettings>
 {
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
-        MeasurementCommandSettings settings,
+        BaselineCommandSettings settings,
         CancellationToken cancellationToken)
     {
         try
         {
             var format = ReportRenderer.ParseFormat(settings.Format);
+            var outputs = ReportOutputSpec.ParseAll(settings.Outputs);
             var runtime = CliRuntime.Load(settings.ConfigurationPath);
             var baseline = await runtime.Workflow
                 .CreateAsync(runtime.Configuration, cancellationToken)
                 .ConfigureAwait(false);
             runtime.Store.Save(runtime.Configuration.BaselinePath, baseline);
-            Console.WriteLine(ReportRenderer.RenderBaselineCreated(
+
+            string Render(ReportFormat target) => ReportRenderer.RenderBaselineCreated(
                 runtime.Configuration.BaselinePath,
                 baseline.Queries.Count,
                 baseline.SchemaVersion,
-                format));
+                target);
+
+            ReportFiles.WriteAll(outputs, Render, cancellationToken);
+            Console.WriteLine(Render(format));
             return 0;
         }
         catch (Exception exception)
@@ -79,16 +84,17 @@ public sealed class BaselineCommand : AsyncCommand<MeasurementCommandSettings>
     }
 }
 
-public sealed class VerifyCommand : AsyncCommand<MeasurementCommandSettings>
+public sealed class VerifyCommand : AsyncCommand<VerifyCommandSettings>
 {
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
-        MeasurementCommandSettings settings,
+        VerifyCommandSettings settings,
         CancellationToken cancellationToken)
     {
         try
         {
             var format = ReportRenderer.ParseFormat(settings.Format);
+            var outputs = ReportOutputSpec.ParseAll(settings.Outputs);
             var runtime = CliRuntime.Load(settings.ConfigurationPath);
             var baseline = runtime.Store.Load(runtime.Configuration.BaselinePath);
             var verification = await runtime.Workflow
@@ -97,14 +103,40 @@ public sealed class VerifyCommand : AsyncCommand<MeasurementCommandSettings>
             var report = VerificationReportFactory.Create(
                 verification,
                 runtime.Configuration);
-            Console.WriteLine(ReportRenderer.Render(
-                report,
-                format));
+
+            ReportFiles.WriteAll(
+                outputs,
+                target => ReportRenderer.Render(report, target),
+                cancellationToken);
+            Console.WriteLine(ReportRenderer.Render(report, format));
             return verification.ExitCode;
         }
         catch (Exception exception)
         {
             return CliErrors.Write(exception);
+        }
+    }
+}
+
+internal static class ReportFiles
+{
+    public static void WriteAll(
+        IReadOnlyList<ReportOutputSpec> outputs,
+        Func<ReportFormat, string> render,
+        CancellationToken cancellationToken)
+    {
+        foreach (var output in outputs)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var fullPath = Path.GetFullPath(output.Path);
+            var directory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.WriteAllText(fullPath, render(output.Format) + Environment.NewLine);
         }
     }
 }

@@ -36,9 +36,10 @@ public sealed class ReportRendererTests
                 0.025,
                 "estimated-not-measured-not-carbon"));
         var report = new VerificationReport(
-            "regressed",
+            VerificationVerdict.Regressed,
             1,
-            [new QueryReport("query", "regressed", true, [metric], energy)]);
+            [],
+            [new QueryReport("query", VerificationVerdict.Regressed, false, true, [metric], energy)]);
 
         var text = ReportRenderer.Render(report, format);
 
