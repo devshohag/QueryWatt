@@ -9,6 +9,7 @@ TestResults/
 *.snupkg
 artifacts/
 .tools/
+.querywatt-base/
 *.trx
 appsettings.Local.json
 *-result.json

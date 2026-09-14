@@ -5,7 +5,7 @@ namespace QueryWatt.Baselines;
 public static class BaselineContract
 {
     public const int SchemaVersion = 1;
-    public const string ToolVersion = "0.4.0-preview.1";
+    public const string ToolVersion = "0.5.0-preview.1";
 }
 
 public sealed record BaselineDocument(

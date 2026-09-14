@@ -9,13 +9,16 @@ of `SET STATISTICS IO, TIME` messages, and raw per-run metrics.
 
 ## Current status
 
-Week 4 development milestone. The repository now has strict YAML configuration,
+Week 5 development milestone. The repository now has strict YAML configuration,
 sequential multi-query sessions, fixed typed parameters, transparent R-7/IQR
 statistics, schema-versioned baseline JSON, environment fingerprint refusal,
 dual-threshold verification, distinct exit codes, and non-measured SHOWPLAN
 fingerprints. It also includes three report formats and an opt-in, documented CPU-coefficient
 energy model. `QueryWatt.Cli` exposes the intended three commands and packs as a
-local .NET tool; no package has been published yet.
+local .NET tool. A composite GitHub Action now compares base and proposed
+queries inside one pinned SQL Server job, publishes a Markdown report, updates
+one PR comment, and enforces the CLI exit code. No package has been published
+yet.
 
 ## What QueryWatt does not measure
 
@@ -65,7 +68,7 @@ dotnet tool install `
     --tool-path .\.tools `
     --add-source .\artifacts `
     QueryWatt `
-    --version 0.4.0-preview.1
+    --version 0.5.0-preview.1
 ```
 
 Run baseline and verification in all three report formats:
@@ -87,6 +90,18 @@ The console, JSON, and Markdown contracts are documented in
 [`docs/reports.md`](docs/reports.md).
 The sustainability methodology and limitations are in
 [`docs/energy-model.md`](docs/energy-model.md).
+
+## GitHub Actions
+
+The sample workflow at `.github/workflows/querywatt-ci.yml` builds and tests the
+proposed engine, starts a pinned SQL Server 2022 CU23 container, measures the
+approved base query, verifies the proposed query, uploads the report, and
+upserts one marker-owned PR comment. See
+[`docs/github-actions.md`](docs/github-actions.md).
+
+After the infrastructure is merged, follow
+[`docs/intentional-regression-demo.md`](docs/intentional-regression-demo.md) to
+create the non-sargable demo PR and record a real red-check GIF.
 
 This repository contains synthetic examples only. Never commit client schemas,
 queries, execution plans, statistics, connection strings, or production data.
