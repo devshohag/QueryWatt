@@ -91,7 +91,8 @@ public sealed class BaselineWorkflowTests
                 "test-image",
                 [_seedPath],
                 ["dbo.TestTable"],
-                [new ResolvedQueryConfiguration(request, thresholds)]);
+                new ResolvedEnergyConfiguration(false, null),
+                [new ResolvedQueryConfiguration(request, thresholds, null)]);
         }
 
         public BaselineWorkflow CreateWorkflow(

@@ -1,16 +1,12 @@
 # Baseline and verification contract
 
-Week 3 adds the internal baseline and verify workflow. The public packaged CLI
-will wrap the same services later without changing these decisions.
+The baseline and verify workflow is exposed by the Week 4 `querywatt` CLI. The
+sample measurement probe remains available only for low-level validation.
 
 ## Baseline
 
 ```powershell
-dotnet run `
-    --project .\samples\QueryWatt.MeasurementProbe `
-    --configuration Release `
-    --no-build `
-    -- baseline .\samples\querywatt.yml
+.\.tools\querywatt baseline .\samples\querywatt.yml --format console
 ```
 
 The configured `baselineFile` is written atomically with stable camel-case key
@@ -23,11 +19,7 @@ does not create a meaningless timestamp-only diff.
 ## Verify
 
 ```powershell
-dotnet run `
-    --project .\samples\QueryWatt.MeasurementProbe `
-    --configuration Release `
-    --no-build `
-    -- verify .\samples\querywatt.yml
+.\.tools\querywatt verify .\samples\querywatt.yml --format console
 ```
 
 Comparison uses the IQR-filtered median. Logical reads gate by default at more
@@ -50,3 +42,6 @@ it is outside all measured runs and does not execute the query.
 | 1 | At least one measured regression exceeded both thresholds. |
 | 2 | Measurement failed or the measurement environment/fingerprint differs. |
 | 3 | Usage, YAML, baseline-file, query-set, or threshold-policy error. |
+
+Console, JSON, and Markdown output are selected with `--format`. See
+[`reports.md`](reports.md) for the output contract.

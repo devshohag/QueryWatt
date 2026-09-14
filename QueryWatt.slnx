@@ -2,7 +2,10 @@
   <Folder Name="/src/">
     <Project Path="src/QueryWatt.Baselines/QueryWatt.Baselines.csproj" />
     <Project Path="src/QueryWatt.Core/QueryWatt.Core.csproj" />
+    <Project Path="src/QueryWatt.Energy/QueryWatt.Energy.csproj" />
+    <Project Path="src/QueryWatt.Reporting/QueryWatt.Reporting.csproj" />
     <Project Path="src/QueryWatt.Configuration/QueryWatt.Configuration.csproj" />
+    <Project Path="src/QueryWatt.Cli/QueryWatt.Cli.csproj" />
     <Project Path="src/QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" />
   </Folder>
   <Folder Name="/tests/">

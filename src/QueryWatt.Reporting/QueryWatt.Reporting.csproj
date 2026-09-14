@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../QueryWatt.Baselines/QueryWatt.Baselines.csproj" />
+    <ProjectReference Include="../QueryWatt.Configuration/QueryWatt.Configuration.csproj" />
+    <ProjectReference Include="../QueryWatt.Energy/QueryWatt.Energy.csproj" />
+  </ItemGroup>
+</Project>
