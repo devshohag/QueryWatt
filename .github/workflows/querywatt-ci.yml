@@ -1,0 +1,125 @@
+name: QueryWatt SQL regression guard
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "samples/**"
+      - "tests/**"
+      - "action.yml"
+      - "Directory.*.props"
+      - "QueryWatt.slnx"
+      - ".github/workflows/querywatt-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  querywatt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-CU23-ubuntu-22.04
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: QueryWatt_CI_2026_Strong!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'QueryWatt_CI_2026_Strong!' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      QUERYWATT_CONNECTION_STRING: Server=localhost,1433;Database=QueryWattSample;User ID=sa;Password=QueryWatt_CI_2026_Strong!;TrustServerCertificate=True;Encrypt=True
+      MSSQL_SA_PASSWORD: QueryWatt_CI_2026_Strong!
+
+    steps:
+      - name: Check out proposed change
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Check out approved base
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: .querywatt-base
+          persist-credentials: false
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore, build, and test
+        run: |
+          dotnet restore ./QueryWatt.slnx
+          dotnet build ./QueryWatt.slnx --configuration Release --no-restore
+          dotnet test ./QueryWatt.slnx --configuration Release --no-build
+          node --test ./.github/scripts/*.test.cjs
+
+      - name: Pack proposed QueryWatt tool
+        run: |
+          dotnet pack ./src/QueryWatt.Cli/QueryWatt.Cli.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./artifacts
+
+      - name: Seed pinned SQL Server from approved base
+        env:
+          SQL_CONTAINER_ID: ${{ job.services.sqlserver.id }}
+        run: |
+          docker exec -i "$SQL_CONTAINER_ID" \
+            /opt/mssql-tools18/bin/sqlcmd \
+            -S localhost \
+            -U sa \
+            -P "$MSSQL_SA_PASSWORD" \
+            -C \
+            -b \
+            < ./.querywatt-base/samples/TicketingDatabase/setup.sql
+
+      - name: Measure approved base with proposed engine
+        run: |
+          if [[ ! -f ./.querywatt-base/samples/ci/querywatt.yml ]]; then
+            mkdir -p ./.querywatt-base/samples/ci
+            cp ./samples/ci/querywatt.yml ./.querywatt-base/samples/ci/querywatt.yml
+          fi
+
+          dotnet run \
+            --project ./src/QueryWatt.Cli/QueryWatt.Cli.csproj \
+            --configuration Release \
+            --no-build \
+            -- baseline ./.querywatt-base/samples/ci/querywatt.yml \
+            --format json \
+            > ./artifacts/base-baseline-created.json
+          cp ./.querywatt-base/querywatt-baseline.json ./querywatt-baseline.json
+
+      - name: Verify proposed queries
+        id: querywatt
+        continue-on-error: true
+        uses: ./
+        with:
+          configuration-file: samples/ci/querywatt.yml
+          tool-version: 0.5.0-preview.1
+          package-source: ${{ github.workspace }}/artifacts
+          report-file: artifacts/querywatt-report.md
+          comment-on-pr: "true"
+          upload-report: "true"
+
+      - name: Enforce QueryWatt result
+        if: ${{ always() }}
+        env:
+          QUERYWATT_EXIT_CODE: ${{ steps.querywatt.outputs.exit-code }}
+        run: |
+          if [[ "$QUERYWATT_EXIT_CODE" =~ ^[0-3]$ ]]; then
+            exit "$QUERYWATT_EXIT_CODE"
+          fi
+
+          echo "QueryWatt action did not return a valid exit code." >&2
+          exit 2

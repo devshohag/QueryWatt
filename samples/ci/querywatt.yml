@@ -1,0 +1,40 @@
+schemaVersion: 1
+baselineFile: ../../querywatt-baseline.json
+
+connection:
+  environmentVariable: QUERYWATT_CONNECTION_STRING
+
+environment:
+  containerImageTag: mcr.microsoft.com/mssql/server:2022-CU23-ubuntu-22.04
+  seedScripts:
+    - ../TicketingDatabase/setup.sql
+  tables:
+    - dbo.Ticket
+
+measurement:
+  warmupRuns: 3
+  measuredRuns: 20
+  commandTimeoutSeconds: 60
+
+thresholds:
+  logicalReads:
+    percent: 25
+    absolute: 1000
+
+energy:
+  enabled: false
+  wattsPerBusyCore: null
+
+queries:
+  - name: customer-seek
+    file: ../TicketingDatabase/queries/seek-parameterized.sql
+    commandType: text
+    executionsPerDay: 18420
+    parameters:
+      - name: CustomerId
+        type: int32
+        value: "417"
+    thresholds:
+      logicalReads:
+        percent: 25
+        absolute: 50

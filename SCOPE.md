@@ -1,8 +1,9 @@
 # QueryWatt v1 Scope
 
 QueryWatt is a SQL Server efficiency regression guard. It proves whether a
-repeatable code or schema change caused registered queries to consume more
-resources than a committed baseline.
+repeatable query/code change caused registered queries to consume more
+resources than an approved baseline. A schema or seed change currently causes
+an explicit environment-mismatch refusal instead of a fabricated comparison.
 
 ## In scope
 
@@ -27,4 +28,5 @@ resources than a committed baseline.
 - Production monitoring or production database modification
 - Cold-cache, concurrency, and lock-contention benchmarks
 - Multiple parameter sets per query
+- Automatic schema-change comparison
 - PostgreSQL and Azure SQL providers

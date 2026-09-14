@@ -12,7 +12,7 @@ var app = new CommandApp();
 app.Configure(configuration =>
 {
     configuration.SetApplicationName("querywatt");
-    configuration.SetApplicationVersion("0.4.0-preview.1");
+    configuration.SetApplicationVersion("0.5.0-preview.1");
     configuration.AddCommand<InitCommand>("init")
         .WithDescription("Create a safe, runnable QueryWatt example scaffold.");
     configuration.AddCommand<BaselineCommand>("baseline")
