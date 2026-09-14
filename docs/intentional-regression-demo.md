@@ -1,7 +1,9 @@
 # Intentional regression pull request
 
-Run this only after the Week 5 infrastructure is merged to the default branch.
-It creates a synthetic query regression suitable for the README GIF.
+This is the project's proof: a public pull request where QueryWatt turns a check
+red on a change that is functionally correct and measurably more expensive. Open
+it only after the action fixes are merged to the default branch, so the run is
+real and repeatable.
 
 ```powershell
 Set-Location "D:\QueryWatt"
@@ -20,14 +22,29 @@ git commit -m "demo: introduce non-sargable customer lookup"
 git push -u origin demo/querywatt-detects-non-sargable-seek
 ```
 
-Open a pull request without merging it. The base query uses the
-`IX_Ticket_CustomerId` seek. The proposed expression `CustomerId + 0` makes the
-predicate non-sargable while returning the same rows. On the synthetic 50,000
-row data set, it should exceed both the 25 percent and 50-page thresholds, make
-the final check red with exit code 1, and produce a PR comment containing the
-measured before/after values. The exact percentage is deliberately not claimed
-in advance.
+Open the pull request. Do not merge it.
 
-Record the GIF only after the real workflow finishes. Capture the red check,
-expand the QueryWatt report, show the measured logical-read row and exit code,
-then close the demo PR. Do not record a fabricated report.
+## What the run should show
+
+The base query uses the `IX_Ticket_CustomerId` seek. The proposed expression
+`CustomerId + 0` makes the predicate non-sargable while returning exactly the
+same rows, so correctness tests cannot catch it. On the synthetic 50,000-row
+data set it should exceed both the 25 percent and the 50-page thresholds and
+return exit code 1. The exact percentage is deliberately not claimed in advance.
+
+In the report, three things should line up:
+
+- `logicalReads` regressed, with the baseline and current medians side by side;
+- **query text changed: yes** — expected, this pull request rewrote the query;
+- **estimated plan shape changed: yes** — the seek became a scan. This is the
+  signal that carries information, which is why it is reported separately from
+  the text change.
+
+## Recording it
+
+Record only after the real workflow finishes. Capture the red check, expand the
+QueryWatt report, show the measured logical-read row and the exit code, then
+close the demo pull request. The recording goes in the README.
+
+Do not record a fabricated report. The whole value of this artefact is that it
+is a real run on a public repository that anyone can re-execute.
