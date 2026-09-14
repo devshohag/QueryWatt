@@ -8,7 +8,6 @@ TestResults/
 *.nupkg
 *.snupkg
 *.trx
-querywatt-baseline.json
 appsettings.Local.json
 *-result.json
 *.sql.bak

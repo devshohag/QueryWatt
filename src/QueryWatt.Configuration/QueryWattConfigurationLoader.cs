@@ -44,12 +44,24 @@ public sealed class QueryWattConfigurationLoader
             ?? throw new ConfigurationException("Configuration directory could not be resolved.");
 
         var requests = configuration.Queries
-            .Select(query => ResolveQuery(query, configuration.Measurement, configurationDirectory))
+            .Select(query => ResolveQuery(
+                query,
+                configuration.Measurement,
+                query.Thresholds ?? configuration.Thresholds,
+                configurationDirectory))
+            .ToArray();
+
+        var seedScriptPaths = configuration.Environment.SeedScripts
+            .Select(path => ResolveExistingFile(path, configurationDirectory, "Seed script"))
             .ToArray();
 
         return new ResolvedQueryWattConfiguration(
             fullPath,
             configuration.Connection.EnvironmentVariable,
+            Path.GetFullPath(configuration.BaselineFile, configurationDirectory),
+            configuration.Environment.ContainerImageTag,
+            seedScriptPaths,
+            configuration.Environment.Tables.ToArray(),
             requests);
     }
 
@@ -72,6 +84,33 @@ public sealed class QueryWattConfigurationLoader
             throw new ConfigurationException("measurement is required.");
         }
 
+        if (string.IsNullOrWhiteSpace(configuration.BaselineFile))
+        {
+            throw new ConfigurationException("baselineFile is required.");
+        }
+
+        if (configuration.Environment is null
+            || configuration.Environment.SeedScripts is null
+            || configuration.Environment.Tables is null)
+        {
+            throw new ConfigurationException("environment, seedScripts, and tables are required.");
+        }
+
+        if (configuration.Environment.SeedScripts.Count == 0
+            || configuration.Environment.Tables.Count == 0)
+        {
+            throw new ConfigurationException(
+                "At least one environment.seedScripts entry and one environment.tables entry are required.");
+        }
+
+        EnsureUniqueEntries(configuration.Environment.SeedScripts, "environment.seedScripts");
+        EnsureUniqueEntries(configuration.Environment.Tables, "environment.tables");
+
+        if (configuration.Thresholds is null)
+        {
+            throw new ConfigurationException("thresholds is required.");
+        }
+
         if (configuration.Queries is null || configuration.Queries.Count == 0)
         {
             throw new ConfigurationException("At least one query must be configured.");
@@ -87,9 +126,23 @@ public sealed class QueryWattConfigurationLoader
         }
     }
 
-    private static MeasurementRequest ResolveQuery(
+    private static void EnsureUniqueEntries(IReadOnlyList<string> values, string fieldName)
+    {
+        var duplicate = values
+            .GroupBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(group => group.Count() > 1)?.Key;
+
+        if (duplicate is not null)
+        {
+            throw new ConfigurationException(
+                $"{fieldName} contains duplicate value '{duplicate}'.");
+        }
+    }
+
+    private static ResolvedQueryConfiguration ResolveQuery(
         QueryConfiguration query,
         MeasurementConfiguration measurement,
+        ThresholdsConfiguration thresholds,
         string configurationDirectory)
     {
         if (string.IsNullOrWhiteSpace(query.Name))
@@ -155,7 +208,63 @@ public sealed class QueryWattConfigurationLoader
                 exception);
         }
 
-        return request;
+        var resolvedThresholds = ResolveThresholds(query.Name, thresholds);
+        return new ResolvedQueryConfiguration(request, resolvedThresholds);
+    }
+
+    private static QueryThresholds ResolveThresholds(
+        string queryName,
+        ThresholdsConfiguration thresholds)
+    {
+        if (thresholds.LogicalReads is null)
+        {
+            throw new ConfigurationException(
+                $"Query '{queryName}' requires a logicalReads threshold.");
+        }
+
+        var resolved = new QueryThresholds(
+            ResolveThreshold(thresholds.LogicalReads),
+            thresholds.CpuTimeMilliseconds is null
+                ? null
+                : ResolveThreshold(thresholds.CpuTimeMilliseconds),
+            thresholds.ClientDurationMilliseconds is null
+                ? null
+                : ResolveThreshold(thresholds.ClientDurationMilliseconds));
+
+        try
+        {
+            resolved.Validate();
+        }
+        catch (ArgumentOutOfRangeException exception)
+        {
+            throw new ConfigurationException(
+                $"Query '{queryName}' has an invalid threshold: {exception.Message}",
+                exception);
+        }
+
+        return resolved;
+    }
+
+    private static RegressionThreshold ResolveThreshold(MetricThresholdConfiguration threshold) =>
+        new(threshold.Percent, threshold.Absolute);
+
+    private static string ResolveExistingFile(
+        string path,
+        string configurationDirectory,
+        string description)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ConfigurationException($"{description} path cannot be empty.");
+        }
+
+        var fullPath = Path.GetFullPath(path, configurationDirectory);
+        if (!File.Exists(fullPath))
+        {
+            throw new ConfigurationException($"{description} was not found: {fullPath}");
+        }
+
+        return fullPath;
     }
 
     private static QueryParameter ResolveParameter(

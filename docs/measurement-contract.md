@@ -132,7 +132,7 @@ Parser must tolerate: localized server messages (fail loudly with a clear error 
 
 Plan hash is **not** taken from `sys.dm_exec_query_stats`. That path depends on the plan still being cached, on matching the right row, and on `VIEW SERVER PERFORMANCE STATE` permission that a CI service account may not have.
 
-**v1 approach:** a separate, final, non-measured step using `SET SHOWPLAN_XML ON`, which returns the plan **without executing the query**, then reading `QueryHash` and `QueryPlanHash` from the statement element of the returned XML.
+**v1 approach:** a separate, final, non-measured step using `SET SHOWPLAN_XML ON`, which returns the plan **without executing the query**. QueryWatt reads `QueryHash` and `QueryPlanHash` when SQL Server supplies them. If an edition or build omits either attribute, QueryWatt stores a `SHA256:` fallback: normalized statement text for the query fingerprint and canonicalized estimated-plan XML for the plan fingerprint. Volatile compile metadata is removed before hashing. Native and fallback values are both informational estimated-plan fingerprints.
 
 Consequences, stated plainly in the report and the docs:
 - This is the **estimated** plan for the pinned `SET` options and the given parameter set, not a per-run record of the actual plan used.

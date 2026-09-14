@@ -20,6 +20,10 @@ public sealed record QueryStatisticsSummary(
     string QueryName,
     MetricSummary LogicalReads,
     MetricSummary LobLogicalReads,
+    MetricSummary PhysicalReads,
+    MetricSummary ReadAheadReads,
+    MetricSummary LobPhysicalReads,
+    MetricSummary LobReadAheadReads,
     MetricSummary CpuTimeMilliseconds,
     MetricSummary ClientDurationMilliseconds,
     MetricSummary RowsReturned);
@@ -44,6 +48,10 @@ public static class MeasurementStatistics
             sample.QueryName,
             SummarizeMetric(sample.Runs.Select(run => (double)run.LogicalReads)),
             SummarizeMetric(sample.Runs.Select(run => (double)run.LobLogicalReads)),
+            SummarizeMetric(sample.Runs.Select(run => (double)run.PhysicalReads)),
+            SummarizeMetric(sample.Runs.Select(run => (double)run.ReadAheadReads)),
+            SummarizeMetric(sample.Runs.Select(run => (double)run.LobPhysicalReads)),
+            SummarizeMetric(sample.Runs.Select(run => (double)run.LobReadAheadReads)),
             SummarizeMetric(sample.Runs.Select(run => (double)run.CpuTimeMilliseconds)),
             SummarizeMetric(sample.Runs.Select(run => run.ClientDurationMilliseconds)),
             SummarizeMetric(sample.Runs.Select(run => (double)run.RowsReturned)));

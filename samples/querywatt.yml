@@ -1,12 +1,33 @@
 schemaVersion: 1
+baselineFile: ../querywatt-baseline.json
 
 connection:
   environmentVariable: QUERYWATT_CONNECTION_STRING
+
+environment:
+  # Set containerImageTag only when the database really runs from a pinned image.
+  containerImageTag: null
+  seedScripts:
+    - TicketingDatabase/setup.sql
+  tables:
+    - dbo.Ticket
 
 measurement:
   warmupRuns: 3
   measuredRuns: 20
   commandTimeoutSeconds: 60
+
+thresholds:
+  logicalReads:
+    percent: 25
+    absolute: 1000
+  # CPU and duration are reported only unless explicitly configured.
+  # cpuTimeMilliseconds:
+  #   percent: 30
+  #   absolute: 20
+  # clientDurationMilliseconds:
+  #   percent: 30
+  #   absolute: 50
 
 queries:
   - name: seek
@@ -16,6 +37,10 @@ queries:
       - name: CustomerId
         type: int32
         value: "417"
+    thresholds:
+      logicalReads:
+        percent: 25
+        absolute: 50
 
   - name: scan
     file: TicketingDatabase/queries/scan.sql

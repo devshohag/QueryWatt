@@ -12,8 +12,14 @@ public sealed class QueryWattConfigurationLoaderTests
         using var fixture = new ConfigurationFixture();
         fixture.WriteQuery("queries/one.sql", "SELECT @Count");
         fixture.WriteQuery("queries/two.sql", "SELECT @CustomerId");
+        fixture.WriteQuery("seed.sql", "SELECT 1");
         var configPath = fixture.WriteConfiguration("""
             schemaVersion: 1
+            environment:
+              seedScripts:
+                - seed.sql
+              tables:
+                - dbo.TestTable
             connection:
               environmentVariable: TEST_CONNECTION
             measurement:
@@ -52,8 +58,14 @@ public sealed class QueryWattConfigurationLoaderTests
     {
         using var fixture = new ConfigurationFixture();
         fixture.WriteQuery("query.sql", "SELECT 1");
+        fixture.WriteQuery("seed.sql", "SELECT 1");
         var configPath = fixture.WriteConfiguration("""
             schemaVersion: 1
+            environment:
+              seedScripts:
+                - seed.sql
+              tables:
+                - dbo.TestTable
             queries:
               - name: Seek
                 file: query.sql

@@ -85,12 +85,68 @@ public sealed class SqlServerMeasurementRunner : IMeasurementRunner
                     messages));
             }
 
-            return new QueryMeasurementSample(request.Name, request.WarmupRuns, runs);
+            var planFingerprints = await CapturePlanFingerprintsAsync(
+                    connection,
+                    request,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return new QueryMeasurementSample(
+                request.Name,
+                request.WarmupRuns,
+                runs,
+                planFingerprints);
         }
         finally
         {
             connection.InfoMessage -= collector.Handle;
         }
+    }
+
+    private static async Task<IReadOnlyList<StatementPlanFingerprint>> CapturePlanFingerprintsAsync(
+        SqlConnection connection,
+        MeasurementRequest request,
+        CancellationToken cancellationToken)
+    {
+        await SetShowPlanAsync(connection, enabled: true, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = request.CommandText;
+            command.CommandType = request.CommandType;
+            command.CommandTimeout = request.CommandTimeoutSeconds;
+            AddParameters(command, request.EffectiveParameters);
+
+            var xmlDocuments = new List<string>();
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            do
+            {
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    if (!reader.IsDBNull(0))
+                    {
+                        xmlDocuments.Add(reader.GetString(0));
+                    }
+                }
+            }
+            while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+
+            return ShowPlanParser.Parse(xmlDocuments);
+        }
+        finally
+        {
+            await SetShowPlanAsync(connection, enabled: false, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task SetShowPlanAsync(
+        SqlConnection connection,
+        bool enabled,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = enabled ? "SET SHOWPLAN_XML ON;" : "SET SHOWPLAN_XML OFF;";
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task ApplyPinnedOptionsAsync(

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/QueryWatt.Baselines/QueryWatt.Baselines.csproj" />
     <Project Path="src/QueryWatt.Core/QueryWatt.Core.csproj" />
     <Project Path="src/QueryWatt.Configuration/QueryWatt.Configuration.csproj" />
     <Project Path="src/QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" />
