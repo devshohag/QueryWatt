@@ -34,4 +34,14 @@ public sealed record RunMetrics(
 public sealed record QueryMeasurementSample(
     string QueryName,
     int WarmupRuns,
-    IReadOnlyList<RunMetrics> Runs);
+    IReadOnlyList<RunMetrics> Runs,
+    IReadOnlyList<StatementPlanFingerprint>? PlanFingerprints = null)
+{
+    public IReadOnlyList<StatementPlanFingerprint> EffectivePlanFingerprints =>
+        PlanFingerprints ?? Array.Empty<StatementPlanFingerprint>();
+}
+
+public sealed record StatementPlanFingerprint(
+    int Ordinal,
+    string QueryHash,
+    string QueryPlanHash);

@@ -9,11 +9,12 @@ of `SET STATISTICS IO, TIME` messages, and raw per-run metrics.
 
 ## Current status
 
-Week 2 development milestone. The measurement core has passed its manual
-three-way validation. The repository now adds strict YAML configuration,
-sequential multi-query sessions, fixed typed parameters, and transparent
-R-7/IQR statistics. The public `init`, `baseline`, and `verify` commands remain
-intentionally unexposed until their contracts are implemented.
+Week 3 development milestone. The repository now has strict YAML configuration,
+sequential multi-query sessions, fixed typed parameters, transparent R-7/IQR
+statistics, schema-versioned baseline JSON, environment fingerprint refusal,
+dual-threshold verification, distinct exit codes, and non-measured SHOWPLAN
+fingerprints. These are currently exercised through the internal measurement
+probe; the packaged public CLI is not released yet.
 
 ## What QueryWatt does not measure
 
@@ -38,22 +39,32 @@ manual-validation entry point. It is not a fourth public QueryWatt command.
 See [`docs/validation.md`](docs/validation.md) for the SQL Server comparison
 procedure.
 
-For the temporary Week 2 multi-query probe:
+Create a baseline through the temporary development probe:
 
 ```powershell
 dotnet run `
     --project .\samples\QueryWatt.MeasurementProbe `
     --configuration Release `
     --no-build `
-    -- .\samples\querywatt.yml |
-    Out-File .\week2-result.json -Encoding utf8
+    -- baseline .\samples\querywatt.yml
+```
+
+Then verify the unchanged workload:
+
+```powershell
+dotnet run `
+    --project .\samples\QueryWatt.MeasurementProbe `
+    --configuration Release `
+    --no-build `
+    -- verify .\samples\querywatt.yml
 ```
 
 The YAML path is the source of truth: every query file path is resolved relative
-to that YAML file, and queries run sequentially in listed order. Parameter values
-are parsed with invariant culture and a declared database type.
+to that YAML file, queries run sequentially, and parameter values use a declared
+database type.
 See [`docs/configuration.md`](docs/configuration.md) for the schema and exact
-statistics behavior.
+statistics behavior, and
+[`docs/baseline-and-verify.md`](docs/baseline-and-verify.md) for Week 3 behavior.
 
 This repository contains synthetic examples only. Never commit client schemas,
 queries, execution plans, statistics, connection strings, or production data.

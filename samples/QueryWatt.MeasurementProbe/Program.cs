@@ -1,80 +1,78 @@
 using System.Text.Json;
+using QueryWatt.Baselines;
 using QueryWatt.Configuration;
-using QueryWatt.Core;
 using QueryWatt.SqlServer;
 
-if (args.Length != 1)
+if (args.Length != 2
+    || (args[0] != "baseline" && args[0] != "verify"))
 {
-    Console.Error.WriteLine("Usage: dotnet run --project samples/QueryWatt.MeasurementProbe -- <querywatt.yml|query.sql>");
+    Console.Error.WriteLine(
+        "Usage: dotnet run --project samples/QueryWatt.MeasurementProbe -- <baseline|verify> <querywatt.yml>");
     return 3;
 }
 
-var queryPath = Path.GetFullPath(args[0]);
-if (!File.Exists(queryPath))
-{
-    Console.Error.WriteLine($"Query file was not found: {queryPath}");
-    return 3;
-}
+var commandName = args[0];
+var configurationPath = Path.GetFullPath(args[1]);
 
 try
 {
-    object output;
+    var configuration = new QueryWattConfigurationLoader().Load(configurationPath);
+    var connectionString = Environment.GetEnvironmentVariable(
+        configuration.ConnectionStringEnvironmentVariable);
 
-    if (Path.GetExtension(queryPath).Equals(".yml", StringComparison.OrdinalIgnoreCase)
-        || Path.GetExtension(queryPath).Equals(".yaml", StringComparison.OrdinalIgnoreCase))
+    if (string.IsNullOrWhiteSpace(connectionString))
     {
-        var resolved = new QueryWattConfigurationLoader().Load(queryPath);
-        var configuredConnectionString = Environment.GetEnvironmentVariable(
-            resolved.ConnectionStringEnvironmentVariable);
-
-        if (string.IsNullOrWhiteSpace(configuredConnectionString))
-        {
-            Console.Error.WriteLine(
-                $"Set {resolved.ConnectionStringEnvironmentVariable} before running the probe.");
-            return 3;
-        }
-
-        var runner = new SqlServerMeasurementRunner(configuredConnectionString);
-        output = await new MeasurementSessionRunner(runner)
-            .MeasureAsync(resolved.Requests)
-            .ConfigureAwait(false);
-    }
-    else
-    {
-        var connectionString = Environment.GetEnvironmentVariable("QUERYWATT_CONNECTION_STRING");
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            Console.Error.WriteLine("Set QUERYWATT_CONNECTION_STRING before running the probe.");
-            return 3;
-        }
-
-        var runner = new SqlServerMeasurementRunner(connectionString);
-        var queryText = await File.ReadAllTextAsync(queryPath).ConfigureAwait(false);
-        var request = new MeasurementRequest(
-            Path.GetFileNameWithoutExtension(queryPath),
-            queryText,
-            WarmupRuns: 3,
-            MeasuredRuns: 20,
-            CommandTimeoutSeconds: 60);
-
-        var sample = await runner.MeasureAsync(request).ConfigureAwait(false);
-        output = new MeasurementSessionResult(
-            [sample],
-            [MeasurementStatistics.Summarize(sample)]);
+        Console.Error.WriteLine(
+            $"Set {configuration.ConnectionStringEnvironmentVariable} before running the probe.");
+        return 3;
     }
 
-    var options = new JsonSerializerOptions
+    var workflow = new BaselineWorkflow(
+        new SqlServerMeasurementRunner(connectionString),
+        new SqlServerEnvironmentInspector(connectionString),
+        SqlServerMeasurementRunner.PinnedSetOptions);
+    var store = new BaselineJsonStore();
+    var jsonOptions = new JsonSerializerOptions
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true
     };
 
-    Console.WriteLine(JsonSerializer.Serialize(output, options));
-    return 0;
+    if (commandName == "baseline")
+    {
+        var baseline = await workflow.CreateAsync(configuration).ConfigureAwait(false);
+        store.Save(configuration.BaselinePath, baseline);
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            status = "baseline-created",
+            path = configuration.BaselinePath,
+            queryCount = baseline.Queries.Count,
+            schemaVersion = baseline.SchemaVersion
+        }, jsonOptions));
+        return 0;
+    }
+
+    var storedBaseline = store.Load(configuration.BaselinePath);
+    var verification = await workflow
+        .VerifyAsync(configuration, storedBaseline)
+        .ConfigureAwait(false);
+    Console.WriteLine(JsonSerializer.Serialize(verification, jsonOptions));
+    return verification.ExitCode;
 }
 catch (ConfigurationException exception)
 {
     Console.Error.WriteLine($"Configuration failed: {exception.Message}");
     return 3;
+}
+catch (BaselineConfigurationException exception)
+{
+    Console.Error.WriteLine($"Baseline configuration failed: {exception.Message}");
+    return 3;
+}
+catch (EnvironmentMismatchException exception)
+{
+    Console.Error.WriteLine($"Measurement refused: {exception.Message}");
+    return 2;
 }
 catch (Exception exception)
 {

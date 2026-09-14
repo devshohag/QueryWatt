@@ -1,0 +1,2007 @@
+{
+  "schemaVersion": 1,
+  "toolVersion": "0.3.0-dev",
+  "environment": {
+    "sqlServerProductVersion": "16.0.1000.6",
+    "sqlServerEdition": "Express Edition (64-bit)",
+    "containerImageTag": null,
+    "pinnedSetOptionsSha256": "c876b4ca4a83a362530edf47f36faa166058c80dd1c22bbe36abd70924a11029",
+    "seedSha256": "2403b5c14a955ac0c601e8dbca9524a75903dc0e10a02ec12a3369cc3ffb0791",
+    "warmupRuns": 3,
+    "measuredRuns": 20
+  },
+  "queries": [
+    {
+      "name": "seek",
+      "commandTextSha256": "57d0c01053f34daf5d768d5baa7d17a24ef4d120c2679d7e6082b4cafc1ac26f",
+      "parameterSetSha256": "c0c5aa35396b2d2c72abc8101c52961205d77809c10083605f2f0cbb87304381",
+      "thresholds": {
+        "logicalReads": {
+          "percent": 25,
+          "absolute": 50
+        },
+        "cpuTimeMilliseconds": null,
+        "clientDurationMilliseconds": null
+      },
+      "planFingerprints": [],
+      "summary": {
+        "queryName": "seek",
+        "logicalReads": {
+          "n": 20,
+          "minimum": 2,
+          "rawMedian": 2,
+          "filteredMedian": 2,
+          "maximum": 2,
+          "mean": 2,
+          "standardDeviation": 0,
+          "firstQuartile": 2,
+          "thirdQuartile": 2,
+          "lowerOutlierFence": 2,
+          "upperOutlierFence": 2,
+          "rawValues": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobLogicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "physicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "readAheadReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobPhysicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobReadAheadReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "cpuTimeMilliseconds": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "clientDurationMilliseconds": {
+          "n": 20,
+          "minimum": 0.5795,
+          "rawMedian": 0.98605,
+          "filteredMedian": 0.9893,
+          "maximum": 1.5133,
+          "mean": 1.0383049999999998,
+          "standardDeviation": 0.22272486721289114,
+          "firstQuartile": 0.9374,
+          "thirdQuartile": 1.1723999999999999,
+          "lowerOutlierFence": 0.5849000000000002,
+          "upperOutlierFence": 1.5248999999999997,
+          "rawValues": [
+            1.5133,
+            1.4002,
+            0.8906,
+            1.031,
+            0.9747,
+            0.953,
+            0.7321,
+            0.5795,
+            1.013,
+            0.9893,
+            0.9828,
+            1.15,
+            1.3396,
+            1.3103,
+            0.8604,
+            0.9729,
+            0.8604,
+            0.9612,
+            1.0122,
+            1.2396
+          ],
+          "outlierRunNumbers": [
+            8
+          ],
+          "p95": null
+        },
+        "rowsReturned": {
+          "n": 20,
+          "minimum": 50,
+          "rawMedian": 50,
+          "filteredMedian": 50,
+          "maximum": 50,
+          "mean": 50,
+          "standardDeviation": 0,
+          "firstQuartile": 50,
+          "thirdQuartile": 50,
+          "lowerOutlierFence": 50,
+          "upperOutlierFence": 50,
+          "rawValues": [
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        }
+      },
+      "runs": [
+        {
+          "runNumber": 1,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.5133,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 2,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.4002,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 3,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.8906,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 4,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.031,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 5,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.9747,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 6,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.953,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 7,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.7321,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 8,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.5795,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 9,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.013,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 10,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.9893,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 11,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.9828,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 12,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.15,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 13,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.3396,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 14,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.3103,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 15,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.8604,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 16,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.9729,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 17,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.8604,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 18,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 0.9612,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 19,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.0122,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 20,
+          "logicalReads": 2,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 1.2396,
+          "rowsReturned": 50,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 0,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 2,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scan",
+      "commandTextSha256": "25b47726dc0c107eaa8074a9726bfe0f4132ce97df611b53613080dd7c595ee2",
+      "parameterSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "thresholds": {
+        "logicalReads": {
+          "percent": 25,
+          "absolute": 1000
+        },
+        "cpuTimeMilliseconds": null,
+        "clientDurationMilliseconds": null
+      },
+      "planFingerprints": [
+        {
+          "ordinal": 1,
+          "queryHash": "0xEB991C8A53731D17",
+          "queryPlanHash": "0xB6DE3F84A65B97DB"
+        }
+      ],
+      "summary": {
+        "queryName": "scan",
+        "logicalReads": {
+          "n": 20,
+          "minimum": 132,
+          "rawMedian": 132,
+          "filteredMedian": 132,
+          "maximum": 132,
+          "mean": 132,
+          "standardDeviation": 0,
+          "firstQuartile": 132,
+          "thirdQuartile": 132,
+          "lowerOutlierFence": 132,
+          "upperOutlierFence": 132,
+          "rawValues": [
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132,
+            132
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobLogicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "physicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "readAheadReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobPhysicalReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "lobReadAheadReads": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 0,
+          "filteredMedian": 0,
+          "maximum": 0,
+          "mean": 0,
+          "standardDeviation": 0,
+          "firstQuartile": 0,
+          "thirdQuartile": 0,
+          "lowerOutlierFence": 0,
+          "upperOutlierFence": 0,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "cpuTimeMilliseconds": {
+          "n": 20,
+          "minimum": 0,
+          "rawMedian": 7.5,
+          "filteredMedian": 7.5,
+          "maximum": 16,
+          "mean": 7.8,
+          "standardDeviation": 7.807688518377254,
+          "firstQuartile": 0,
+          "thirdQuartile": 16,
+          "lowerOutlierFence": -24,
+          "upperOutlierFence": 40,
+          "rawValues": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            16,
+            0,
+            15,
+            0,
+            0,
+            0,
+            16,
+            15,
+            16,
+            15,
+            16,
+            16,
+            15,
+            16
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "clientDurationMilliseconds": {
+          "n": 20,
+          "minimum": 5.2364,
+          "rawMedian": 12.335999999999999,
+          "filteredMedian": 12.335999999999999,
+          "maximum": 15.3395,
+          "mean": 10.442105000000002,
+          "standardDeviation": 4.216106561684014,
+          "firstQuartile": 5.381825,
+          "thirdQuartile": 14.3978,
+          "lowerOutlierFence": -8.1421375,
+          "upperOutlierFence": 27.9217625,
+          "rawValues": [
+            6.7083,
+            5.4042,
+            5.2751,
+            5.3147,
+            5.2421,
+            5.2364,
+            5.4534,
+            5.2508,
+            10.1316,
+            13.5072,
+            13.7609,
+            13.9564,
+            11.1648,
+            14.4911,
+            15.3395,
+            14.5355,
+            14.3667,
+            14.624,
+            14.1928,
+            14.8866
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        },
+        "rowsReturned": {
+          "n": 20,
+          "minimum": 1440,
+          "rawMedian": 1440,
+          "filteredMedian": 1440,
+          "maximum": 1440,
+          "mean": 1440,
+          "standardDeviation": 0,
+          "firstQuartile": 1440,
+          "thirdQuartile": 1440,
+          "lowerOutlierFence": 1440,
+          "upperOutlierFence": 1440,
+          "rawValues": [
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440,
+            1440
+          ],
+          "outlierRunNumbers": [],
+          "p95": null
+        }
+      },
+      "runs": [
+        {
+          "runNumber": 1,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 6.7083,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 6,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 2,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.4042,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 3,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.2751,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 4,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.3147,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 5,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.2421,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 6,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.2364,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 7,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 5.4534,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 5,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 8,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 5.2508,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 4,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 9,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 15,
+          "clientDurationMilliseconds": 10.1316,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 15,
+              "serverElapsedTimeMilliseconds": 9,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 10,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 13.5072,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 12,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 11,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 13.7609,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 12,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 12,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 0,
+          "clientDurationMilliseconds": 13.9564,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 0,
+              "serverElapsedTimeMilliseconds": 12,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 13,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 11.1648,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 10,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 14,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 15,
+          "clientDurationMilliseconds": 14.4911,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 15,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 15,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 15.3395,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 14,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 16,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 15,
+          "clientDurationMilliseconds": 14.5355,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 15,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 17,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 14.3667,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 18,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 14.624,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 19,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 15,
+          "clientDurationMilliseconds": 14.1928,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 15,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "runNumber": 20,
+          "logicalReads": 132,
+          "lobLogicalReads": 0,
+          "physicalReads": 0,
+          "readAheadReads": 0,
+          "lobPhysicalReads": 0,
+          "lobReadAheadReads": 0,
+          "cpuTimeMilliseconds": 16,
+          "clientDurationMilliseconds": 14.8866,
+          "rowsReturned": 1440,
+          "statements": [
+            {
+              "ordinal": 1,
+              "cpuTimeMilliseconds": 16,
+              "serverElapsedTimeMilliseconds": 13,
+              "tableIo": [
+                {
+                  "tableName": "Ticket",
+                  "occurrence": 1,
+                  "scanCount": 1,
+                  "logicalReads": 132,
+                  "physicalReads": 0,
+                  "readAheadReads": 0,
+                  "lobLogicalReads": 0,
+                  "lobPhysicalReads": 0,
+                  "lobReadAheadReads": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

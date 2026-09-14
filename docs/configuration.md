@@ -5,14 +5,27 @@ a typo cannot silently change a measurement.
 
 ```yaml
 schemaVersion: 1
+baselineFile: ../querywatt-baseline.json
 
 connection:
   environmentVariable: QUERYWATT_CONNECTION_STRING
+
+environment:
+  containerImageTag: null
+  seedScripts:
+    - TicketingDatabase/setup.sql
+  tables:
+    - dbo.Ticket
 
 measurement:
   warmupRuns: 3
   measuredRuns: 20
   commandTimeoutSeconds: 60
+
+thresholds:
+  logicalReads:
+    percent: 25
+    absolute: 1000
 
 queries:
   - name: customer-seek
@@ -44,6 +57,15 @@ Parameter values should be quoted YAML scalars. They are parsed with invariant
 culture into the declared `DbType`; QueryWatt never calls `AddWithValue`.
 Optional `size`, `precision`, and `scale` fields are copied to `SqlParameter`.
 A YAML `null` value becomes database `NULL`.
+
+The seed fingerprint hashes the ordered seed-script contents and configured
+table row counts. `verify` refuses comparison when that fingerprint, SQL Server
+version/edition, pinned SET options, run counts, or an explicitly supplied
+container image tag differs from the baseline.
+
+Every gating metric has both `percent` and `absolute`; a regression requires
+both values to be exceeded. Per-query `thresholds` replaces the global block
+for that query. CPU and duration have no default threshold.
 
 ## Statistics
 
