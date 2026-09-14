@@ -65,12 +65,14 @@ public sealed class BaselineCommand : AsyncCommand<BaselineCommandSettings>
             var baseline = await runtime.Workflow
                 .CreateAsync(runtime.Configuration, cancellationToken)
                 .ConfigureAwait(false);
-            runtime.Store.Save(runtime.Configuration.BaselinePath, baseline);
+            var stored = settings.IncludeRuns ? baseline : BaselineDetail.Strip(baseline);
+            runtime.Store.Save(runtime.Configuration.BaselinePath, stored);
 
             string Render(ReportFormat target) => ReportRenderer.RenderBaselineCreated(
                 runtime.Configuration.BaselinePath,
-                baseline.Queries.Count,
-                baseline.SchemaVersion,
+                stored.Queries.Count,
+                stored.SchemaVersion,
+                settings.IncludeRuns,
                 target);
 
             ReportFiles.WriteAll(outputs, Render, cancellationToken);

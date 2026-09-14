@@ -28,6 +28,13 @@ public class MeasurementCommandSettings : CommandSettings
     public string[] Outputs { get; init; } = [];
 }
 
-public sealed class BaselineCommandSettings : MeasurementCommandSettings;
+public sealed class BaselineCommandSettings : MeasurementCommandSettings
+{
+    [CommandOption("--include-runs")]
+    [Description(
+        "Store every raw observation in the baseline file. Off by default so the "
+        + "committed baseline stays small enough to review in a diff.")]
+    public bool IncludeRuns { get; init; }
+}
 
 public sealed class VerifyCommandSettings : MeasurementCommandSettings;
