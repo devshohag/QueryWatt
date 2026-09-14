@@ -149,6 +149,7 @@ A plan hash change is reported as its own line with a `changed` marker. In v1 it
 - **All raw measured values are stored** in the session record before any filtering. Outliers are never silently discarded.
 - Reported per metric: `min`, `median`, `max`, `mean`, `stdDev`, `n`, and both **raw** and **IQR-filtered** median, so a reader can see what filtering did.
 - IQR filter: values outside `[Q1 − 1.5·IQR, Q3 + 1.5·IQR]` are marked as outliers, retained in the raw array, and excluded from the filtered median. The report prints the count of excluded values.
+- Quartiles, median, and p95 use the R-7 linear-interpolation definition (`h = (n - 1)p + 1`). Population standard deviation is reported because the stored runs are the complete measurement session, not a sample used to estimate an unseen session.
 - **p95 gating by sample size:**
   - `n < 20` — refuse to produce a summary at all; the run is an error, not a result.
   - `20 ≤ n < 50` — **median only.** p95 is not computed or displayed.

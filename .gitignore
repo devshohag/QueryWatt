@@ -12,4 +12,3 @@ querywatt-baseline.json
 appsettings.Local.json
 *-result.json
 *.sql.bak
-/querywatt/
