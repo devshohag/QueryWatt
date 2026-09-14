@@ -43,11 +43,13 @@ public sealed class QueryWattConfigurationLoader
         var configurationDirectory = Path.GetDirectoryName(fullPath)
             ?? throw new ConfigurationException("Configuration directory could not be resolved.");
 
+        var globalThresholds = configuration.Thresholds ?? new ThresholdsConfiguration();
+
         var requests = configuration.Queries
             .Select(query => ResolveQuery(
                 query,
                 configuration.Measurement,
-                query.Thresholds ?? configuration.Thresholds,
+                globalThresholds,
                 configurationDirectory))
             .ToArray();
 
@@ -109,11 +111,6 @@ public sealed class QueryWattConfigurationLoader
         EnsureUniqueEntries(configuration.Environment.SeedScripts, "environment.seedScripts");
         EnsureUniqueEntries(configuration.Environment.Tables, "environment.tables");
 
-        if (configuration.Thresholds is null)
-        {
-            throw new ConfigurationException("thresholds is required.");
-        }
-
         if (configuration.Energy is null)
         {
             throw new ConfigurationException("energy is required.");
@@ -159,7 +156,7 @@ public sealed class QueryWattConfigurationLoader
     private static ResolvedQueryConfiguration ResolveQuery(
         QueryConfiguration query,
         MeasurementConfiguration measurement,
-        ThresholdsConfiguration thresholds,
+        ThresholdsConfiguration globalThresholds,
         string configurationDirectory)
     {
         if (string.IsNullOrWhiteSpace(query.Name))
@@ -233,31 +230,42 @@ public sealed class QueryWattConfigurationLoader
                 $"Query '{query.Name}' executionsPerDay must be a finite positive number.");
         }
 
-        var resolvedThresholds = ResolveThresholds(query.Name, thresholds);
+        var resolvedThresholds = ResolveThresholds(query.Name, query.Thresholds, globalThresholds);
         return new ResolvedQueryConfiguration(
             request,
             resolvedThresholds,
             query.ExecutionsPerDay);
     }
 
+    // A per-query thresholds block overrides the global block one metric at a time.
+    // Replacing the whole block would let a query that only tunes CPU lose the
+    // global logical-read gate without any error being raised.
     private static QueryThresholds ResolveThresholds(
         string queryName,
-        ThresholdsConfiguration thresholds)
+        ThresholdsConfiguration? queryThresholds,
+        ThresholdsConfiguration globalThresholds)
     {
-        if (thresholds.LogicalReads is null)
+        var logicalReads = queryThresholds?.LogicalReads ?? globalThresholds.LogicalReads;
+        if (logicalReads is null)
         {
             throw new ConfigurationException(
-                $"Query '{queryName}' requires a logicalReads threshold.");
+                $"Query '{queryName}' has no logicalReads threshold. Set thresholds.logicalReads "
+                + "at the top level, or inside this query's own thresholds block.");
         }
 
+        var cpuTimeMilliseconds = queryThresholds?.CpuTimeMilliseconds
+            ?? globalThresholds.CpuTimeMilliseconds;
+        var clientDurationMilliseconds = queryThresholds?.ClientDurationMilliseconds
+            ?? globalThresholds.ClientDurationMilliseconds;
+
         var resolved = new QueryThresholds(
-            ResolveThreshold(thresholds.LogicalReads),
-            thresholds.CpuTimeMilliseconds is null
+            ResolveThreshold(logicalReads),
+            cpuTimeMilliseconds is null
                 ? null
-                : ResolveThreshold(thresholds.CpuTimeMilliseconds),
-            thresholds.ClientDurationMilliseconds is null
+                : ResolveThreshold(cpuTimeMilliseconds),
+            clientDurationMilliseconds is null
                 ? null
-                : ResolveThreshold(thresholds.ClientDurationMilliseconds));
+                : ResolveThreshold(clientDurationMilliseconds));
 
         try
         {

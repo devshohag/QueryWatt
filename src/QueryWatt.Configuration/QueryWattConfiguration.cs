@@ -33,12 +33,10 @@ public sealed class EnvironmentConfiguration
 
 public sealed class ThresholdsConfiguration
 {
-    public MetricThresholdConfiguration LogicalReads { get; set; } = new()
-    {
-        Percent = 25,
-        Absolute = 1000
-    };
-
+    // Every metric is optional here. A per-query block overrides the global block
+    // metric by metric, so a default value on this type would silently win over a
+    // global threshold the user actually wrote.
+    public MetricThresholdConfiguration? LogicalReads { get; set; }
     public MetricThresholdConfiguration? CpuTimeMilliseconds { get; set; }
     public MetricThresholdConfiguration? ClientDurationMilliseconds { get; set; }
 }

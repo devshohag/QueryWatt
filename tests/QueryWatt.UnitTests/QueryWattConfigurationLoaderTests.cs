@@ -26,6 +26,10 @@ public sealed class QueryWattConfigurationLoaderTests
               warmupRuns: 2
               measuredRuns: 20
               commandTimeoutSeconds: 45
+            thresholds:
+              logicalReads:
+                percent: 25
+                absolute: 1000
             queries:
               - name: first
                 file: queries/one.sql

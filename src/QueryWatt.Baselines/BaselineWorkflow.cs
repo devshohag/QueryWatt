@@ -43,7 +43,10 @@ public sealed class BaselineWorkflow(
         BaselineDocument baseline,
         CancellationToken cancellationToken = default)
     {
-        ValidateBaselineAgainstConfiguration(configuration, baseline);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(baseline);
+
+        var storedQueries = ValidateBaselineAgainstConfiguration(configuration, baseline);
 
         var environment = await _environmentInspector
             .InspectAsync(configuration.TableNames, cancellationToken)
@@ -58,7 +61,8 @@ public sealed class BaselineWorkflow(
         var results = new List<QueryVerificationResult>(configuration.Queries.Count);
         for (var index = 0; index < configuration.Queries.Count; index++)
         {
-            var baselineQuery = baseline.Queries[index];
+            var queryName = configuration.Queries[index].Request.Name;
+            var baselineQuery = storedQueries[queryName];
             var currentSummary = session.Summaries[index];
             var currentSample = session.Samples[index];
 
@@ -136,7 +140,7 @@ public sealed class BaselineWorkflow(
             var planChanged = !baselineQuery.PlanFingerprints.SequenceEqual(
                 currentSample.EffectivePlanFingerprints);
             results.Add(new QueryVerificationResult(
-                baselineQuery.Name,
+                queryName,
                 metrics.Any(metric => metric.Regressed),
                 planChanged,
                 metrics));
@@ -183,35 +187,73 @@ public sealed class BaselineWorkflow(
                 run.RowsReturned,
                 run.Statements)).ToArray());
 
-    private static void ValidateBaselineAgainstConfiguration(
+    // Queries are matched by name, never by position. Reordering entries in
+    // querywatt.yml is a harmless edit and must not force a re-baseline.
+    private static IReadOnlyDictionary<string, BaselineQuery> ValidateBaselineAgainstConfiguration(
         ResolvedQueryWattConfiguration configuration,
         BaselineDocument baseline)
     {
-       
-        if (baseline.Queries.Count != configuration.Queries.Count)
+        var stored = new Dictionary<string, BaselineQuery>(StringComparer.OrdinalIgnoreCase);
+        foreach (var query in baseline.Queries)
         {
-            throw new BaselineConfigurationException(
-                "Configured query count differs from the baseline; run baseline again.");
-        }
-
-        for (var index = 0; index < configuration.Queries.Count; index++)
-        {
-            var configured = configuration.Queries[index];
-            var stored = baseline.Queries[index];
-            if (!string.Equals(configured.Request.Name, stored.Name, StringComparison.Ordinal)
-                || configured.Thresholds != stored.Thresholds)
+            if (!stored.TryAdd(query.Name, query))
             {
                 throw new BaselineConfigurationException(
-                    $"Query order, name, or thresholds differ at position {index + 1}; run baseline again.");
+                    $"The baseline contains more than one query named '{query.Name}'; run baseline again.");
+            }
+        }
+
+        var configuredNames = configuration.Queries
+            .Select(query => query.Request.Name)
+            .ToArray();
+
+        var missingFromBaseline = configuredNames
+            .Where(name => !stored.ContainsKey(name))
+            .ToArray();
+        var noLongerConfigured = stored.Keys
+            .Where(name => !configuredNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (missingFromBaseline.Length > 0 || noLongerConfigured.Length > 0)
+        {
+            var differences = new List<string>();
+            if (missingFromBaseline.Length > 0)
+            {
+                differences.Add(
+                    "configured but not in the baseline: " + string.Join(", ", missingFromBaseline));
+            }
+
+            if (noLongerConfigured.Length > 0)
+            {
+                differences.Add(
+                    "in the baseline but no longer configured: " + string.Join(", ", noLongerConfigured));
+            }
+
+            throw new BaselineConfigurationException(
+                "Configured queries and baseline queries differ ("
+                + string.Join("; ", differences)
+                + "). Run baseline again.");
+        }
+
+        foreach (var configured in configuration.Queries)
+        {
+            var storedQuery = stored[configured.Request.Name];
+            if (configured.Thresholds != storedQuery.Thresholds)
+            {
+                throw new BaselineConfigurationException(
+                    $"Thresholds for query '{configured.Request.Name}' differ from the baseline; "
+                    + "run baseline again.");
             }
 
             var parameterHash = FingerprintCalculator.CalculateParameterSet(configured.Request);
-            if (!string.Equals(parameterHash, stored.ParameterSetSha256, StringComparison.Ordinal))
+            if (!string.Equals(parameterHash, storedQuery.ParameterSetSha256, StringComparison.Ordinal))
             {
                 throw new EnvironmentMismatchException(
-                    $"Parameter set differs for query '{stored.Name}'.");
+                    $"Parameter set differs for query '{configured.Request.Name}'.");
             }
         }
+
+        return stored;
     }
 
     private static void EnsureEnvironmentMatches(
