@@ -6,6 +6,21 @@ namespace QueryWatt.UnitTests;
 public sealed class MeasurementStatisticsTests
 {
     [Fact]
+    public void SummarizeMetric_ReportsSampleStandardDeviation()
+    {
+        // Ten 10s and ten 20s: mean 15, squared deviations 20 * 25 = 500.
+        // Sample standard deviation divides by n - 1, so sqrt(500 / 19).
+        var observations = Enumerable.Repeat(10d, 10)
+            .Concat(Enumerable.Repeat(20d, 10))
+            .ToArray();
+
+        var summary = MeasurementStatistics.SummarizeMetric(observations);
+
+        Assert.Equal(15d, summary.Mean);
+        Assert.Equal(Math.Sqrt(500d / 19d), summary.StandardDeviation, 10);
+    }
+
+    [Fact]
     public void SummarizeMetric_MarksOutlierAndKeepsRawValues()
     {
         var values = Enumerable.Repeat(100d, 19).Append(10_000d).ToArray();

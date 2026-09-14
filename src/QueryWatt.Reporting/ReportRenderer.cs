@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using QueryWatt.Baselines;
 
 namespace QueryWatt.Reporting;
 
@@ -65,11 +66,24 @@ public static class ReportRenderer
         var builder = new StringBuilder();
         builder.AppendLine($"QueryWatt verification: {report.Verdict.ToUpperInvariant()}");
 
+        foreach (var warning in report.Warnings)
+        {
+            builder.AppendLine($"Warning: {warning}");
+        }
+
+        if (report.Queries.Count == 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("No queries were compared.");
+            return builder.ToString().TrimEnd();
+        }
+
         foreach (var query in report.Queries)
         {
             builder.AppendLine();
             builder.AppendLine($"Query: {query.QueryName} [{query.Verdict}]");
-            builder.AppendLine($"Estimated plan hash changed: {(query.PlanChanged ? "yes" : "no")}");
+            builder.AppendLine($"Query text changed: {YesNo(query.QueryTextChanged)}");
+            builder.AppendLine($"Estimated plan shape changed: {YesNo(query.PlanShapeChanged)}");
             builder.AppendLine("Measured (IQR-filtered median):");
             foreach (var metric in query.Metrics)
             {
@@ -115,12 +129,31 @@ public static class ReportRenderer
         var builder = new StringBuilder();
         builder.AppendLine($"## QueryWatt verification: {report.Verdict.ToUpperInvariant()}");
 
+        if (report.Warnings.Count > 0)
+        {
+            builder.AppendLine();
+            foreach (var warning in report.Warnings)
+            {
+                builder.AppendLine($"> **Warning:** {EscapeMarkdown(warning)}");
+                builder.AppendLine(">");
+            }
+        }
+
+        if (report.Queries.Count == 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("No queries were compared.");
+            return builder.ToString().TrimEnd();
+        }
+
         foreach (var query in report.Queries)
         {
             builder.AppendLine();
             builder.AppendLine($"### {EscapeMarkdown(query.QueryName)} — {query.Verdict}");
             builder.AppendLine();
-            builder.AppendLine($"Estimated plan hash changed: **{(query.PlanChanged ? "yes" : "no")}**");
+            builder.AppendLine($"Query text changed: **{YesNo(query.QueryTextChanged)}**");
+            builder.AppendLine();
+            builder.AppendLine($"Estimated plan shape changed: **{YesNo(query.PlanShapeChanged)}**");
             builder.AppendLine();
             builder.AppendLine("| Measured metric | Baseline | Current | Change | Threshold | Verdict | Outliers | p95 | ");
             builder.AppendLine("|---|---:|---:|---:|---|---|---:|---:|");
@@ -167,18 +200,20 @@ public static class ReportRenderer
         return builder.ToString().TrimEnd();
     }
 
+    private static string YesNo(bool value) => value ? "yes" : "no";
+
     private static string Number(double value) =>
         value.ToString("0.####", CultureInfo.InvariantCulture);
 
     private static string Percent(double? value) =>
         value is null ? "n/a (zero baseline)" : $"{Number(value.Value)}%";
 
-    private static string Threshold(QueryWatt.Baselines.MetricVerificationResult metric) =>
+    private static string Threshold(MetricVerificationResult metric) =>
         metric.Threshold is null
             ? "none"
             : $">{Number(metric.Threshold.Percent)}% and >{Number(metric.Threshold.Absolute)}";
 
-    private static string P95(QueryWatt.Baselines.MetricVerificationResult metric) =>
+    private static string P95(MetricVerificationResult metric) =>
         metric.BaselineP95 is null || metric.CurrentP95 is null
             ? "n/a"
             : $"{Number(metric.BaselineP95.Value)}->{Number(metric.CurrentP95.Value)}";

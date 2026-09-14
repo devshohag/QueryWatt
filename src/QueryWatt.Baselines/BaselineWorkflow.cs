@@ -52,7 +52,32 @@ public sealed class BaselineWorkflow(
             .InspectAsync(configuration.TableNames, cancellationToken)
             .ConfigureAwait(false);
         var currentFingerprint = CreateEnvironmentFingerprint(configuration, environment);
-        EnsureEnvironmentMatches(baseline.Environment, currentFingerprint);
+        var comparison = CompareEnvironments(baseline.Environment, currentFingerprint);
+
+        if (comparison.Blocking.Count > 0)
+        {
+            // Changing the schema or the seed data is a normal thing to do in a pull
+            // request. It makes the stored numbers meaningless, but it is not a broken
+            // tool, so it gets its own verdict and a report instead of a bare refusal.
+            if (comparison.Blocking.All(difference =>
+                    string.Equals(difference.Field, "seedSha256", StringComparison.Ordinal)))
+            {
+                return new VerificationResult(
+                    VerificationVerdict.BaselineStale,
+                    2,
+                    [],
+                    [
+                        "The database seed or schema changed since this baseline was approved, "
+                        + "so the stored numbers describe a different database. "
+                        + "Run 'querywatt baseline' again and commit the new baseline file.",
+                        .. comparison.Warnings
+                    ]);
+            }
+
+            throw new EnvironmentMismatchException(
+                "Baseline environment mismatch: "
+                + string.Join("; ", comparison.Blocking.Select(difference => difference.Description)));
+        }
 
         var session = await new MeasurementSessionRunner(_measurementRunner)
             .MeasureAsync(configuration.Requests, cancellationToken)
@@ -137,19 +162,40 @@ public sealed class BaselineWorkflow(
                     note: "informational")
             };
 
-            var planChanged = !baselineQuery.PlanFingerprints.SequenceEqual(
-                currentSample.EffectivePlanFingerprints);
+            // The query text changes in almost every pull request this tool is meant
+            // to review, so a combined flag would always read "changed" and carry no
+            // signal. The plan shape is the part worth a reviewer's attention.
+            var current = currentSample.EffectivePlanFingerprints;
+            var queryTextChanged = FingerprintsDiffer(
+                baselineQuery.PlanFingerprints,
+                current,
+                fingerprint => fingerprint.QueryHash);
+            var planShapeChanged = FingerprintsDiffer(
+                baselineQuery.PlanFingerprints,
+                current,
+                fingerprint => fingerprint.QueryPlanHash);
+
             results.Add(new QueryVerificationResult(
                 queryName,
                 metrics.Any(metric => metric.Regressed),
-                planChanged,
+                queryTextChanged,
+                planShapeChanged,
                 metrics));
         }
 
+        var regressed = results.Any(query => query.Regressed);
         return new VerificationResult(
-            results.Any(query => query.Regressed) ? 1 : 0,
-            results);
+            regressed ? VerificationVerdict.Regressed : VerificationVerdict.Passed,
+            regressed ? 1 : 0,
+            results,
+            comparison.Warnings);
     }
+
+    private static bool FingerprintsDiffer(
+        IReadOnlyList<StatementPlanFingerprint> baseline,
+        IReadOnlyList<StatementPlanFingerprint> current,
+        Func<StatementPlanFingerprint, string> selector) =>
+        !baseline.Select(selector).SequenceEqual(current.Select(selector), StringComparer.Ordinal);
 
     private BaselineEnvironmentFingerprint CreateEnvironmentFingerprint(
         ResolvedQueryWattConfiguration configuration,
@@ -256,28 +302,36 @@ public sealed class BaselineWorkflow(
         return stored;
     }
 
-    private static void EnsureEnvironmentMatches(
-     BaselineEnvironmentFingerprint baseline,
-     BaselineEnvironmentFingerprint current)
+    private static EnvironmentComparison CompareEnvironments(
+        BaselineEnvironmentFingerprint baseline,
+        BaselineEnvironmentFingerprint current)
     {
-        var differences = new List<string>();
+        var blocking = new List<EnvironmentDifference>();
         AddDifference(
-            differences,
+            blocking,
             "sqlServerMajorVersion",
             MajorMinorVersion(baseline.SqlServerProductVersion),
             MajorMinorVersion(current.SqlServerProductVersion));
-        AddDifference(differences, "sqlServerEdition", baseline.SqlServerEdition, current.SqlServerEdition);
-        AddDifference(differences, "containerImageTag", baseline.ContainerImageTag, current.ContainerImageTag);
-        AddDifference(differences, "pinnedSetOptionsSha256", baseline.PinnedSetOptionsSha256, current.PinnedSetOptionsSha256);
-        AddDifference(differences, "seedSha256", baseline.SeedSha256, current.SeedSha256);
-        AddDifference(differences, "warmupRuns", baseline.WarmupRuns, current.WarmupRuns);
-        AddDifference(differences, "measuredRuns", baseline.MeasuredRuns, current.MeasuredRuns);
+        AddDifference(blocking, "sqlServerEdition", baseline.SqlServerEdition, current.SqlServerEdition);
+        AddDifference(blocking, "containerImageTag", baseline.ContainerImageTag, current.ContainerImageTag);
+        AddDifference(blocking, "pinnedSetOptionsSha256", baseline.PinnedSetOptionsSha256, current.PinnedSetOptionsSha256);
+        AddDifference(blocking, "seedSha256", baseline.SeedSha256, current.SeedSha256);
+        AddDifference(blocking, "warmupRuns", baseline.WarmupRuns, current.WarmupRuns);
+        AddDifference(blocking, "measuredRuns", baseline.MeasuredRuns, current.MeasuredRuns);
 
-        if (differences.Count > 0)
+        var warnings = new List<string>();
+        if (!string.Equals(
+                baseline.SqlServerProductVersion,
+                current.SqlServerProductVersion,
+                StringComparison.Ordinal))
         {
-            throw new EnvironmentMismatchException(
-                "Baseline environment mismatch: " + string.Join("; ", differences));
+            warnings.Add(
+                $"SQL Server build differs: baseline '{baseline.SqlServerProductVersion}', "
+                + $"current '{current.SqlServerProductVersion}'. The major version matches, "
+                + "so the comparison still ran.");
         }
+
+        return new EnvironmentComparison(blocking, warnings);
     }
 
     // Only the major.minor pair gates a comparison. A cumulative update moves the
@@ -296,16 +350,28 @@ public sealed class BaselineWorkflow(
     }
 
     private static void AddDifference<T>(
-        ICollection<string> differences,
+        ICollection<EnvironmentDifference> differences,
         string name,
         T baseline,
         T current)
     {
         if (!EqualityComparer<T>.Default.Equals(baseline, current))
         {
-            differences.Add($"{name} (baseline '{baseline}', current '{current}')");
+            differences.Add(new EnvironmentDifference(
+                name,
+                baseline?.ToString() ?? "null",
+                current?.ToString() ?? "null"));
         }
     }
+
+    private sealed record EnvironmentDifference(string Field, string Baseline, string Current)
+    {
+        public string Description => $"{Field} (baseline '{Baseline}', current '{Current}')";
+    }
+
+    private sealed record EnvironmentComparison(
+        IReadOnlyList<EnvironmentDifference> Blocking,
+        IReadOnlyList<string> Warnings);
 
     private static MetricVerificationResult CompareMetric(
         string name,
@@ -346,14 +412,24 @@ public sealed class BaselineWorkflow(
     }
 }
 
+public static class VerificationVerdict
+{
+    public const string Passed = "passed";
+    public const string Regressed = "regressed";
+    public const string BaselineStale = "baseline-stale";
+}
+
 public sealed record VerificationResult(
+    string Verdict,
     int ExitCode,
-    IReadOnlyList<QueryVerificationResult> Queries);
+    IReadOnlyList<QueryVerificationResult> Queries,
+    IReadOnlyList<string> Warnings);
 
 public sealed record QueryVerificationResult(
     string QueryName,
     bool Regressed,
-    bool PlanChanged,
+    bool QueryTextChanged,
+    bool PlanShapeChanged,
     IReadOnlyList<MetricVerificationResult> Metrics);
 
 public sealed record MetricVerificationResult(

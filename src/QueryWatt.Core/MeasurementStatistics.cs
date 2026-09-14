@@ -93,7 +93,11 @@ public static class MeasurementStatistics
             .ToArray();
 
         var mean = raw.Average();
-        var variance = raw.Sum(value => Math.Pow(value - mean, 2)) / raw.Length;
+
+        // Sample variance: these observations are a sample of the runs the query
+        // could have had, not the whole population, so the divisor is n - 1.
+        // MinimumSampleSize keeps the divisor safely above zero.
+        var variance = raw.Sum(value => Math.Pow(value - mean, 2)) / (raw.Length - 1);
 
         return new MetricSummary(
             raw.Length,

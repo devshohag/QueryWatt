@@ -7,12 +7,14 @@ namespace QueryWatt.Reporting;
 public sealed record VerificationReport(
     string Verdict,
     int ExitCode,
+    IReadOnlyList<string> Warnings,
     IReadOnlyList<QueryReport> Queries);
 
 public sealed record QueryReport(
     string QueryName,
     string Verdict,
-    bool PlanChanged,
+    bool QueryTextChanged,
+    bool PlanShapeChanged,
     IReadOnlyList<MetricVerificationResult> Metrics,
     EnergyAssessment Energy);
 
@@ -39,15 +41,17 @@ public static class VerificationReportFactory
 
             return new QueryReport(
                 query.QueryName,
-                query.Regressed ? "regressed" : "passed",
-                query.PlanChanged,
+                query.Regressed ? VerificationVerdict.Regressed : VerificationVerdict.Passed,
+                query.QueryTextChanged,
+                query.PlanShapeChanged,
                 query.Metrics,
                 energy);
         }).ToArray();
 
         return new VerificationReport(
-            verification.ExitCode == 1 ? "regressed" : "passed",
+            verification.Verdict,
             verification.ExitCode,
+            verification.Warnings,
             queries);
     }
 }

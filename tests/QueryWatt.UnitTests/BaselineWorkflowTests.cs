@@ -64,7 +64,8 @@ public sealed class BaselineWorkflowTests
             .VerifyAsync(configuration, baseline);
 
         Assert.Equal(0, result.ExitCode);
-        Assert.True(result.Queries[0].PlanChanged);
+        Assert.True(result.Queries[0].PlanShapeChanged);
+        Assert.False(result.Queries[0].QueryTextChanged);
     }
 
     private sealed class WorkflowFixture : IDisposable
