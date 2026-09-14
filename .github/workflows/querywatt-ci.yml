@@ -100,26 +100,33 @@ jobs:
             > ./artifacts/base-baseline-created.json
           cp ./.querywatt-base/querywatt-baseline.json ./querywatt-baseline.json
 
+      # fail-on-regression is off so the action always succeeds and therefore
+      # always publishes its outputs. A composite action that fails publishes
+      # none, which is how a real error turns into "no exit code" downstream.
       - name: Verify proposed queries
         id: querywatt
-        continue-on-error: true
         uses: ./
         with:
           configuration-file: samples/ci/querywatt.yml
           tool-version: 0.1.0-preview.1
           package-source: ${{ github.workspace }}/artifacts
           report-file: artifacts/querywatt-report.md
+          json-report-file: artifacts/querywatt-report.json
           comment-on-pr: "false"
           upload-report: "true"
+          fail-on-regression: "false"
 
       - name: Enforce QueryWatt result
-        if: ${{ always() }}
         env:
           QUERYWATT_EXIT_CODE: ${{ steps.querywatt.outputs.exit-code }}
+          QUERYWATT_VERDICT: ${{ steps.querywatt.outputs.verdict }}
         run: |
+          echo "QueryWatt verdict: ${QUERYWATT_VERDICT:-unknown}"
+
           if [[ "$QUERYWATT_EXIT_CODE" =~ ^[0-3]$ ]]; then
             exit "$QUERYWATT_EXIT_CODE"
           fi
 
-          echo "QueryWatt action did not return a valid exit code." >&2
+          echo "QueryWatt produced no exit code. Read the job summary and the" >&2
+          echo "uploaded querywatt-report artifact for the underlying failure." >&2
           exit 2
