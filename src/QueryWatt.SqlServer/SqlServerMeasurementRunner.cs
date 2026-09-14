@@ -8,6 +8,7 @@ namespace QueryWatt.SqlServer;
 public sealed class SqlServerMeasurementRunner : IMeasurementRunner
 {
     public const string PinnedSetOptions = """
+        SET LANGUAGE us_english;
         SET ANSI_NULLS ON;
         SET ANSI_PADDING ON;
         SET ANSI_WARNINGS ON;
