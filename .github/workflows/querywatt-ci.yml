@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 jobs:
   querywatt:
@@ -109,7 +109,7 @@ jobs:
           tool-version: 0.5.0-preview.1
           package-source: ${{ github.workspace }}/artifacts
           report-file: artifacts/querywatt-report.md
-          comment-on-pr: "true"
+          comment-on-pr: "false"
           upload-report: "true"
 
       - name: Enforce QueryWatt result
