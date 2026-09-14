@@ -11,10 +11,10 @@ inputs:
     description: Path to querywatt.yml, relative to the repository root.
     required: false
     default: querywatt.yml
-  tool-version:
+ tool-version:
     description: QueryWatt NuGet tool version to install.
     required: false
-    default: 0.5.0-preview.1
+    default: 0.1.0-preview.1
   package-source:
     description: NuGet source containing the QueryWatt tool package.
     required: false

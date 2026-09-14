@@ -1,11 +1,28 @@
 using QueryWatt.Core;
-
+using System.Reflection;
 namespace QueryWatt.Baselines;
 
 public static class BaselineContract
 {
     public const int SchemaVersion = 1;
-    public const string ToolVersion = "0.5.0-preview.1";
+
+    public static string ToolVersion { get; } = ResolveToolVersion();
+
+    private static string ResolveToolVersion()
+    {
+        var assembly = typeof(BaselineContract).Assembly;
+        var informational = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+
+        if (!string.IsNullOrWhiteSpace(informational))
+        {
+            var plus = informational.IndexOf('+');
+            return plus < 0 ? informational : informational[..plus];
+        }
+
+        return assembly.GetName().Version?.ToString() ?? "0.0.0";
+    }
 }
 
 public sealed record BaselineDocument(

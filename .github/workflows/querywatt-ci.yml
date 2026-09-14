@@ -106,7 +106,7 @@ jobs:
         uses: ./
         with:
           configuration-file: samples/ci/querywatt.yml
-          tool-version: 0.5.0-preview.1
+          tool-version: 0.1.0-preview.1
           package-source: ${{ github.workspace }}/artifacts
           report-file: artifacts/querywatt-report.md
           comment-on-pr: "false"

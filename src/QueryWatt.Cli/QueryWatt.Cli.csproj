@@ -4,7 +4,6 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>querywatt</ToolCommandName>
     <PackageId>QueryWatt</PackageId>
-    <Version>0.5.0-preview.1</Version>
     <Authors>QueryWatt contributors</Authors>
     <Description>Catch SQL Server efficiency regressions before they reach production.</Description>
     <PackageTags>sql-server;performance;regression;ci;dotnet-tool</PackageTags>

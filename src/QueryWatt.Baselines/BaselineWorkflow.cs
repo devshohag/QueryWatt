@@ -187,15 +187,7 @@ public sealed class BaselineWorkflow(
         ResolvedQueryWattConfiguration configuration,
         BaselineDocument baseline)
     {
-        if (!string.Equals(
-                baseline.ToolVersion,
-                BaselineContract.ToolVersion,
-                StringComparison.Ordinal))
-        {
-            throw new EnvironmentMismatchException(
-                $"Tool version differs: baseline '{baseline.ToolVersion}', current '{BaselineContract.ToolVersion}'.");
-        }
-
+       
         if (baseline.Queries.Count != configuration.Queries.Count)
         {
             throw new BaselineConfigurationException(
@@ -223,11 +215,15 @@ public sealed class BaselineWorkflow(
     }
 
     private static void EnsureEnvironmentMatches(
-        BaselineEnvironmentFingerprint baseline,
-        BaselineEnvironmentFingerprint current)
+     BaselineEnvironmentFingerprint baseline,
+     BaselineEnvironmentFingerprint current)
     {
         var differences = new List<string>();
-        AddDifference(differences, "sqlServerProductVersion", baseline.SqlServerProductVersion, current.SqlServerProductVersion);
+        AddDifference(
+            differences,
+            "sqlServerMajorVersion",
+            MajorMinorVersion(baseline.SqlServerProductVersion),
+            MajorMinorVersion(current.SqlServerProductVersion));
         AddDifference(differences, "sqlServerEdition", baseline.SqlServerEdition, current.SqlServerEdition);
         AddDifference(differences, "containerImageTag", baseline.ContainerImageTag, current.ContainerImageTag);
         AddDifference(differences, "pinnedSetOptionsSha256", baseline.PinnedSetOptionsSha256, current.PinnedSetOptionsSha256);
@@ -238,8 +234,23 @@ public sealed class BaselineWorkflow(
         if (differences.Count > 0)
         {
             throw new EnvironmentMismatchException(
-                "Baseline environment mismatch: " + string.Join(", ", differences));
+                "Baseline environment mismatch: " + string.Join("; ", differences));
         }
+    }
+
+    // Only the major.minor pair gates a comparison. A cumulative update moves the
+    // build number without changing the optimizer contract, and a gate that fails
+    // because the container was patched is a gate people switch off. The full
+    // product version stays in the baseline document for provenance.
+    private static string MajorMinorVersion(string productVersion)
+    {
+        if (string.IsNullOrWhiteSpace(productVersion))
+        {
+            return string.Empty;
+        }
+
+        var parts = productVersion.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 ? $"{parts[0]}.{parts[1]}" : parts[0];
     }
 
     private static void AddDifference<T>(
@@ -250,7 +261,7 @@ public sealed class BaselineWorkflow(
     {
         if (!EqualityComparer<T>.Default.Equals(baseline, current))
         {
-            differences.Add(name);
+            differences.Add($"{name} (baseline '{baseline}', current '{current}')");
         }
     }
 

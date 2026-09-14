@@ -1,3 +1,4 @@
+using QueryWatt.Baselines;
 using QueryWatt.Cli;
 using Spectre.Console.Cli;
 
@@ -12,7 +13,7 @@ var app = new CommandApp();
 app.Configure(configuration =>
 {
     configuration.SetApplicationName("querywatt");
-    configuration.SetApplicationVersion("0.5.0-preview.1");
+    configuration.SetApplicationVersion(BaselineContract.ToolVersion);
     configuration.AddCommand<InitCommand>("init")
         .WithDescription("Create a safe, runnable QueryWatt example scaffold.");
     configuration.AddCommand<BaselineCommand>("baseline")
