@@ -3,4 +3,4 @@ SELECT
     StatusCode,
     CreatedUtc
 FROM dbo.Ticket
-WHERE CustomerId = @CustomerId;
+WHERE CustomerId + 0 = @CustomerId;
