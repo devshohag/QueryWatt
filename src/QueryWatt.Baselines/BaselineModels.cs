@@ -47,7 +47,9 @@ public sealed record BaselineQuery(
     QueryThresholds Thresholds,
     IReadOnlyList<StatementPlanFingerprint> PlanFingerprints,
     QueryStatisticsSummary Summary,
-    IReadOnlyList<BaselineRun> Runs);
+    // Null when the baseline was written without --include-runs. Verification
+    // never reads it; it exists for offline inspection of a single measurement.
+    IReadOnlyList<BaselineRun>? Runs);
 
 public sealed record BaselineRun(
     int RunNumber,

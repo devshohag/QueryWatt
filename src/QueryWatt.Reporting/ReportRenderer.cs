@@ -42,24 +42,34 @@ public static class ReportRenderer
         string baselinePath,
         int queryCount,
         int schemaVersion,
+        bool includesRawRuns,
         ReportFormat format) => format switch
     {
         ReportFormat.Console =>
-            $"QueryWatt baseline created{Environment.NewLine}Path: {baselinePath}{Environment.NewLine}Queries: {queryCount}{Environment.NewLine}Schema: {schemaVersion}",
+            $"QueryWatt baseline created{Environment.NewLine}"
+            + $"Path: {baselinePath}{Environment.NewLine}"
+            + $"Queries: {queryCount}{Environment.NewLine}"
+            + $"Schema: {schemaVersion}{Environment.NewLine}"
+            + $"Raw runs: {RawRuns(includesRawRuns)}",
         ReportFormat.Json => JsonSerializer.Serialize(new
         {
             status = "baseline-created",
             path = baselinePath,
             queryCount,
-            schemaVersion
+            schemaVersion,
+            includesRawRuns
         }, JsonOptions),
         ReportFormat.Markdown =>
             $"## QueryWatt baseline created{Environment.NewLine}{Environment.NewLine}"
             + $"- Path: `{EscapeMarkdown(baselinePath)}`{Environment.NewLine}"
             + $"- Queries: {queryCount}{Environment.NewLine}"
-            + $"- Schema: {schemaVersion}",
+            + $"- Schema: {schemaVersion}{Environment.NewLine}"
+            + $"- Raw runs: {RawRuns(includesRawRuns)}",
         _ => throw new ArgumentOutOfRangeException(nameof(format))
     };
+
+    private static string RawRuns(bool included) =>
+        included ? "included" : "omitted (pass --include-runs to keep them)";
 
     private static string RenderConsole(VerificationReport report)
     {
