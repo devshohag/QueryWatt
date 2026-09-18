@@ -1,4 +1,7 @@
+using System.Data.Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using QueryWatt.SqlServer.Wrapping;
 using Xunit;
 
 namespace QueryWatt.IntegrationTests;
@@ -6,16 +9,12 @@ namespace QueryWatt.IntegrationTests;
 [Collection(SqlServerCollection.Name)]
 public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
 {
-    [Fact(Skip = "Needs the QueryWatt connection wrapper (PR #9b): this stack closes the reader without advancing past the last result set, so SqlClient discards the STATISTICS IO/TIME messages before QueryWatt can read them.")]
+    [Fact]
     public async Task AnEfCoreLinqQueryComesBackUnchangedAndFullyMeasured()
     {
-        var reference = await fixture
-            .WithoutMeasurementAsync(QueryOrdersAsync)
-            ;
+        var reference = await fixture.WithoutMeasurementAsync(QueryOrdersAsync);
 
-        var measured = await fixture
-            .MeasureAsync("orders.by-customer.efcore", QueryOrdersAsync)
-            ;
+        var measured = await fixture.MeasureAsync("orders.by-customer.efcore", QueryOrdersAsync);
 
         Assert.Equal(TestSchema.OrdersPerCustomer, reference.Count);
         Assert.Equal(reference.Count, measured.Result.Count);
@@ -32,7 +31,7 @@ public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
                 == QueryWatt.Core.Instrumentation.DiagnosticCode.NoCommandsInScope);
     }
 
-    [Fact(Skip = "Needs the QueryWatt connection wrapper (PR #9b): this stack closes the reader without advancing past the last result set, so SqlClient discards the STATISTICS IO/TIME messages before QueryWatt can read them.")]
+    [Fact]
     public async Task AGroupedReportQueryIsMeasuredWithItsGeneratedSql()
     {
         var measured = await fixture.MeasureAsync("reports.orders-per-status.efcore", async () =>
@@ -43,8 +42,7 @@ public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
                 .GroupBy(order => order.StatusId)
                 .Select(group => new { StatusId = group.Key, Orders = group.Count() })
                 .OrderBy(row => row.StatusId)
-                .ToListAsync()
-                ;
+                .ToListAsync();
         });
 
         Assert.NotEmpty(measured.Result);
@@ -54,7 +52,7 @@ public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
         Assert.Contains("GROUP BY", command.CommandText, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "Needs the QueryWatt connection wrapper (PR #9b): this stack closes the reader without advancing past the last result set, so SqlClient discards the STATISTICS IO/TIME messages before QueryWatt can read them.")]
+    [Fact]
     public async Task ARawSqlQueryThroughEfCoreIsMeasured()
     {
         var measured = await fixture.MeasureAsync("catalog.active-products.efcore-raw", async () =>
@@ -66,8 +64,7 @@ public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
                     "SELECT * FROM dbo.[Order] WHERE CustomerId = {0}",
                     TestSchema.SecondaryCustomerId)
                 .AsNoTracking()
-                .ToListAsync()
-                ;
+                .ToListAsync();
         });
 
         Assert.Equal(TestSchema.OrdersPerCustomer, measured.Result.Count);
@@ -84,19 +81,22 @@ public sealed class EfCoreCaptureTests(SqlServerFixture fixture)
                             && order.PlacedOn >= TestSchema.SeedEpoch)
             .OrderByDescending(order => order.PlacedOn)
             .AsNoTracking()
-            .ToListAsync()
-            ;
+            .ToListAsync();
     }
 
-    private OrdersContext NewContext() => new(fixture.ConnectionString);
+    // The wrapped connection is the one line an application adds: EF Core closes its readers
+    // without advancing past the last result set, so without it the server never gets to report
+    // this query's reads.
+    private OrdersContext NewContext() =>
+        new(QueryWattConnection.Wrap(new SqlConnection(fixture.ConnectionString)));
 
-    internal sealed class OrdersContext(string connectionString) : DbContext
+    internal sealed class OrdersContext(DbConnection connection) : DbContext
     {
         public DbSet<OrderEntity> Orders => Set<OrderEntity>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
             optionsBuilder
-                .UseSqlServer(connectionString)
+                .UseSqlServer(connection, contextOwnsConnection: true)
                 .EnableServiceProviderCaching(false);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

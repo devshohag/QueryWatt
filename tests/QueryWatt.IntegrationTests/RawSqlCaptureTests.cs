@@ -63,22 +63,31 @@ public sealed class RawSqlCaptureTests(SqlServerFixture fixture)
     {
         var measured = fixture.Measure("orders.by-customer.reader", () =>
         {
-            using var connection = fixture.OpenConnection();
-            using var command = NewOrdersCommand(connection);
+            // The wrapped connection is the one line an application adds. A hand-written reader
+            // loop closes its reader without advancing past the last result set, and SqlClient
+            // discards the trailing STATISTICS IO/TIME messages when that happens.
+            using var connection = fixture.OpenWrappedConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = OrdersByCustomer;
+
+            var customerId = command.CreateParameter();
+            customerId.ParameterName = "@CustomerId";
+            customerId.DbType = DbType.Guid;
+            customerId.Value = TestSchema.PrimaryCustomerId;
+            command.Parameters.Add(customerId);
+
+            var placedAfter = command.CreateParameter();
+            placedAfter.ParameterName = "@PlacedAfter";
+            placedAfter.DbType = DbType.DateTime2;
+            placedAfter.Value = TestSchema.SeedEpoch;
+            command.Parameters.Add(placedAfter);
+
             using var reader = command.ExecuteReader();
 
             var rows = 0;
             while (reader.Read())
             {
                 rows++;
-            }
-
-            // Advancing past the last result set is what makes SqlClient raise the trailing
-            // STATISTICS IO/TIME messages instead of discarding them on reader close. The
-            // QueryWatt connection wrapper (PR #9b) does this for the application, after which
-            // this drain can come out of the test.
-            while (reader.NextResult())
-            {
             }
 
             return rows;
