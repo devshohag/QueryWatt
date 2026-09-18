@@ -1,3 +1,4 @@
+using System.Data.Common;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
@@ -5,6 +6,7 @@ using NHibernate.Driver;
 using NHibernate.Linq;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
+using QueryWatt.SqlServer.Wrapping;
 using Xunit;
 
 namespace QueryWatt.IntegrationTests;
@@ -16,7 +18,7 @@ public sealed class NHibernateCaptureTests(SqlServerFixture fixture) : IDisposab
 
     public void Dispose() => _sessionFactory?.Dispose();
 
-    [Fact(Skip = "Needs the QueryWatt connection wrapper (PR #9b): this stack closes the reader without advancing past the last result set, so SqlClient discards the STATISTICS IO/TIME messages before QueryWatt can read them.")]
+    [Fact]
     public void AnNHibernateLinqQueryComesBackUnchangedAndFullyMeasured()
     {
         var reference = fixture.WithoutMeasurement(QueryProducts);
@@ -31,7 +33,7 @@ public sealed class NHibernateCaptureTests(SqlServerFixture fixture) : IDisposab
         Assert.Equal(20, command.RowsReturned);
     }
 
-    [Fact(Skip = "Needs the QueryWatt connection wrapper (PR #9b): this stack closes the reader without advancing past the last result set, so SqlClient discards the STATISTICS IO/TIME messages before QueryWatt can read them.")]
+    [Fact]
     public void AnNHibernateHqlQueryIsMeasured()
     {
         // Building the session factory runs NHibernate's own metadata queries; that is
@@ -73,7 +75,7 @@ public sealed class NHibernateCaptureTests(SqlServerFixture fixture) : IDisposab
         configuration.DataBaseIntegration(database =>
         {
             database.ConnectionString = fixture.ConnectionString;
-            database.Driver<MicrosoftDataSqlClientDriver>();
+            database.Driver<QueryWattSqlClientDriver>();
             database.Dialect<MsSql2012Dialect>();
             database.LogSqlInConsole = false;
         });
@@ -84,6 +86,20 @@ public sealed class NHibernateCaptureTests(SqlServerFixture fixture) : IDisposab
             mapper.CompileMappingForAllExplicitlyAddedEntities());
 
         return configuration.BuildSessionFactory();
+    }
+
+    /// <summary>
+    /// NHibernate builds its commands from the driver rather than from the connection, so both
+    /// halves are wrapped here. This is the NHibernate equivalent of the one line an application
+    /// adds elsewhere.
+    /// </summary>
+    public sealed class QueryWattSqlClientDriver : MicrosoftDataSqlClientDriver
+    {
+        public override DbConnection CreateConnection() =>
+            QueryWattConnection.Wrap(base.CreateConnection());
+
+        public override DbCommand CreateCommand() =>
+            QueryWattCommand.Wrap(base.CreateCommand());
     }
 
     public class Product

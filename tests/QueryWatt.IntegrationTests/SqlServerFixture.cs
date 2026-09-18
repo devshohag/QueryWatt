@@ -2,6 +2,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using QueryWatt.Core.Instrumentation;
 using QueryWatt.SqlServer.Capture;
+using QueryWatt.SqlServer.Wrapping;
 using Testcontainers.MsSql;
 using Xunit;
 
@@ -48,6 +49,17 @@ public sealed class SqlServerFixture : IAsyncLifetime
     public SqlConnection OpenConnection()
     {
         var connection = new SqlConnection(ConnectionString);
+        connection.Open();
+        return connection;
+    }
+
+    /// <summary>
+    /// Opens a connection wrapped so its readers finish their result streams before closing, which
+    /// is what lets the server's statistics reach QueryWatt for consumers that do not drain.
+    /// </summary>
+    public QueryWattConnection OpenWrappedConnection()
+    {
+        var connection = QueryWattConnection.Wrap(new SqlConnection(ConnectionString));
         connection.Open();
         return connection;
     }
