@@ -14,6 +14,7 @@ public sealed class MeasurementScopeState
     private readonly List<MeasurementRecord> _children = [];
     private readonly List<MeasurementDiagnostic> _diagnostics = [];
     private readonly List<DbCommand> _explicitAttachments = [];
+    private readonly List<Action<MeasurementScopeState>> _finalizers = [];
     private readonly IMeasurementSink _sink;
     private readonly long _startTimestamp;
     private readonly Lock _gate = new();
@@ -100,6 +101,24 @@ public sealed class MeasurementScopeState
         }
     }
 
+    /// <summary>
+    /// Registers work that must run just before the scope produces its record — the hook the
+    /// capture layer uses to attribute statistics messages that only arrive after a reader has
+    /// been drained. Contract v2 §6.
+    /// </summary>
+    public void AddFinalizer(Action<MeasurementScopeState> finalizer)
+    {
+        ArgumentNullException.ThrowIfNull(finalizer);
+
+        lock (_gate)
+        {
+            if (!_published)
+            {
+                _finalizers.Add(finalizer);
+            }
+        }
+    }
+
     public void AddDiagnostic(DiagnosticCode code, string message)
     {
         lock (_gate)
@@ -152,9 +171,7 @@ public sealed class MeasurementScopeState
                     + "scope still open. Metrics for those commands may be incomplete."));
             }
 
-            Finish(_startedCommands > _commands.Count
-                ? MeasurementStatus.Abandoned
-                : MeasurementStatus.Completed);
+            Finish(MeasurementStatus.Completed);
         }
     }
 
@@ -197,7 +214,22 @@ public sealed class MeasurementScopeState
         Status = status;
         _published = true;
 
+        // Finalizers run first: the capture layer records commands here, because statistics
+        // messages for a reader only arrive once the reader has been drained. Contract v2 §6.
+        RunFinalizers();
         AbsorbExplicitAttachments();
+
+        // Abandonment can only be judged once every command that was going to be recorded is in.
+        if (Status == MeasurementStatus.Completed && _startedCommands > _commands.Count)
+        {
+            Status = MeasurementStatus.Abandoned;
+            _diagnostics.Add(new MeasurementDiagnostic(
+                DiagnosticCode.AbandonedScope,
+                $"Scope '{QueryId}' started {_startedCommands} command(s) but only "
+                + $"{_commands.Count} finished. It is reported but never written to a baseline."));
+        }
+
+        status = Status;
 
         if (_commands.Count == 0 && _children.Count == 0)
         {
@@ -236,6 +268,23 @@ public sealed class MeasurementScopeState
         {
             // A sink fault must never reach the application.
         }
+    }
+
+    private void RunFinalizers()
+    {
+        foreach (var finalizer in _finalizers)
+        {
+            try
+            {
+                finalizer(this);
+            }
+            catch
+            {
+                // A capture fault must never reach the application.
+            }
+        }
+
+        _finalizers.Clear();
     }
 
     private void AbsorbExplicitAttachments()
