@@ -19,6 +19,7 @@ namespace QueryWatt.SqlServer.Capture;
 internal sealed class ConnectionInstrumentation
 {
     private const int MaxBufferedMessages = 20_000;
+    private const int SessionOptionTimeoutSeconds = 5;
 
     private readonly SqlConnection _connection;
     private readonly Lock _gate = new();
@@ -80,7 +81,6 @@ internal sealed class ConnectionInstrumentation
         try
         {
             _connection.StatisticsEnabled = true;
-            _connection.ResetStatistics();
         }
         catch (Exception exception)
         {
@@ -89,13 +89,22 @@ internal sealed class ConnectionInstrumentation
                 "Client statistics are unavailable on this connection: " + exception.Message);
         }
 
-        if (level != InstrumentationLevel.Full || !enableSetOptions || _appliedForCurrentOpen)
+        if (level == InstrumentationLevel.Full && enableSetOptions && !_appliedForCurrentOpen)
         {
-            return;
+            _appliedForCurrentOpen = true;
+            ApplySessionOptions(command);
         }
 
-        _appliedForCurrentOpen = true;
-        ApplySessionOptions(command);
+        // Reset AFTER QueryWatt's own bookkeeping commands so their rows and round trips are
+        // never counted against the application's command. Contract v2 6.
+        try
+        {
+            _connection.ResetStatistics();
+        }
+        catch (Exception)
+        {
+            // Already reported above.
+        }
     }
 
     public IDictionary? RetrieveStatistics()
@@ -165,7 +174,11 @@ internal sealed class ConnectionInstrumentation
             }
 
             using var setOptions = _connection.CreateCommand();
+            InternalCommandMarker.Mark(setOptions);
             setOptions.Transaction = command.Transaction;
+            // A short timeout so a connection that will not take the options surfaces as a
+            // skipped measurement rather than a stall inside the application's call.
+            setOptions.CommandTimeout = SessionOptionTimeoutSeconds;
             setOptions.CommandType = CommandType.Text;
             setOptions.CommandText = "SET STATISTICS IO ON; SET STATISTICS TIME ON;";
             setOptions.ExecuteNonQuery();
@@ -185,7 +198,9 @@ internal sealed class ConnectionInstrumentation
     private bool IsEnglishSession(SqlCommand command)
     {
         using var probe = _connection.CreateCommand();
+        InternalCommandMarker.Mark(probe);
         probe.Transaction = command.Transaction;
+        probe.CommandTimeout = SessionOptionTimeoutSeconds;
         probe.CommandType = CommandType.Text;
         probe.CommandText = "SELECT CAST(@@LANGID AS int);";
 

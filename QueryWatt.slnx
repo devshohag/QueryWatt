@@ -10,6 +10,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/QueryWatt.UnitTests/QueryWatt.UnitTests.csproj" />
+    <Project Path="tests/QueryWatt.IntegrationTests/QueryWatt.IntegrationTests.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/QueryWatt.MeasurementProbe/QueryWatt.MeasurementProbe.csproj" />

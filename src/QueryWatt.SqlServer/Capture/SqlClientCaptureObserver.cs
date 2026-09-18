@@ -65,7 +65,7 @@ internal sealed class SqlClientCaptureObserver : IObserver<KeyValuePair<string, 
         }
 
         var command = PayloadReader.Read<DbCommand>(payload, "Command");
-        if (command is null)
+        if (command is null || InternalCommandMarker.IsMarked(command))
         {
             return;
         }
@@ -249,7 +249,7 @@ internal sealed class SqlClientCaptureObserver : IObserver<KeyValuePair<string, 
         ConnectionInstrumentation? instrumentation,
         IReadOnlyList<string> messages)
     {
-        if (instrumentation is null || !instrumentation.ServerStatisticsAvailable || messages.Count == 0)
+        if (instrumentation is null || messages.Count == 0)
         {
             return null;
         }
