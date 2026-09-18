@@ -70,7 +70,7 @@ public sealed class NHibernateCaptureTests(SqlServerFixture fixture) : IDisposab
 
     private ISessionFactory BuildSessionFactory()
     {
-        var configuration = new Configuration();
+        var configuration = new NHibernate.Cfg.Configuration();
 
         configuration.DataBaseIntegration(database =>
         {

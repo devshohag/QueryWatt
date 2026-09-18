@@ -18,6 +18,8 @@ app.Configure(configuration =>
         .WithDescription("Create a safe, runnable QueryWatt example scaffold.");
     configuration.AddCommand<BaselineCommand>("baseline")
         .WithDescription("Measure configured queries and write an approved baseline.");
+    configuration.AddCommand<ObserveCommand>("observe")
+        .WithDescription("Report what an application run did to the database. Compares nothing.");
     configuration.AddCommand<VerifyCommand>("verify")
         .WithDescription("Measure configured queries and compare them with the baseline.");
 });
