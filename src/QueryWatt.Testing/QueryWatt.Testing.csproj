@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>QueryWatt.Testing</PackageId>
+    <Authors>QueryWatt contributors</Authors>
+    <Description>
+      Fail an ordinary unit test when a SQL Server query gets less efficient. Works with xunit,
+      NUnit and MSTest: a regression is reported as an exception, so no test-framework adapter is
+      needed.
+    </Description>
+    <PackageTags>sql-server;performance;regression;testing;xunit;nunit;mstest</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageOutputPath>../../artifacts</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryWatt.Baselines/QueryWatt.Baselines.csproj" />
+    <ProjectReference Include="../QueryWatt.Core/QueryWatt.Core.csproj" />
+    <ProjectReference Include="../QueryWatt.Reporting/QueryWatt.Reporting.csproj" />
+    <ProjectReference Include="../QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

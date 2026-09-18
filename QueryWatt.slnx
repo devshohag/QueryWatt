@@ -7,6 +7,7 @@
     <Project Path="src/QueryWatt.Configuration/QueryWatt.Configuration.csproj" />
     <Project Path="src/QueryWatt.Cli/QueryWatt.Cli.csproj" />
     <Project Path="src/QueryWatt.SqlServer/QueryWatt.SqlServer.csproj" />
+    <Project Path="src/QueryWatt.Testing/QueryWatt.Testing.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/QueryWatt.UnitTests/QueryWatt.UnitTests.csproj" />

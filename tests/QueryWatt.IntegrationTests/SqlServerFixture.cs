@@ -158,6 +158,7 @@ public sealed class SqlServerFixture : IAsyncLifetime
         await ExecuteAsync(connection, TestSchema.Script).ConfigureAwait(false);
         await ExecuteAsync(connection, TestSchema.Procedures).ConfigureAwait(false);
         await ExecuteAsync(connection, TestSchema.WriteProcedure).ConfigureAwait(false);
+        await ExecuteAsync(connection, TestSchema.GuardProbe).ConfigureAwait(false);
 
         await using var seed = connection.CreateCommand();
         seed.CommandText = TestSchema.Seed;
