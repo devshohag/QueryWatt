@@ -99,6 +99,41 @@ internal static class TestSchema
         END;
         """;
 
+    /// <summary>
+    /// A table big enough that an index seek and a table scan cost visibly different amounts.
+    /// </summary>
+    /// <remarks>
+    /// The other tables here hold tens of rows, which is right for proving that a measurement is
+    /// captured at all — but on tens of rows every plan fits in a couple of pages, so a real
+    /// regression is indistinguishable from noise. Guard tests need a table where the difference is
+    /// unmistakable, which is also why QueryWatt refuses to judge queries below a floor of reads.
+    /// </remarks>
+    public const string GuardProbe = """
+        IF OBJECT_ID('dbo.GuardProbe', 'U') IS NULL
+        BEGIN
+            CREATE TABLE dbo.GuardProbe
+            (
+                GuardProbeId int IDENTITY(1,1) NOT NULL CONSTRAINT PK_GuardProbe PRIMARY KEY,
+                Bucket       int           NOT NULL,
+                Payload      nvarchar(200) NOT NULL
+            );
+
+            WITH numbers AS
+            (
+                SELECT TOP (20000)
+                       ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+                FROM   sys.all_objects a
+                CROSS JOIN sys.all_objects b
+            )
+            INSERT INTO dbo.GuardProbe (Bucket, Payload)
+            SELECT n % 200, REPLICATE(N'x', 100)
+            FROM   numbers;
+
+            CREATE NONCLUSTERED INDEX IX_GuardProbe_Bucket
+                ON dbo.GuardProbe (Bucket) INCLUDE (Payload);
+        END
+        """;
+
     public const string Seed = """
         INSERT INTO dbo.Customer (CustomerId, DisplayName, Email, IsActive)
         VALUES (@PrimaryCustomerId,   N'Northwind Retail', N'orders@northwind.test',  1),
