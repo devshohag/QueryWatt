@@ -18,8 +18,12 @@ app.Configure(configuration =>
         .WithDescription("Create a safe, runnable QueryWatt example scaffold.");
     configuration.AddCommand<BaselineCommand>("baseline")
         .WithDescription("Measure configured queries and write an approved baseline.");
+    configuration.AddCommand<ReportCommand>("report")
+        .WithDescription("Write a self-contained HTML report for a run.");
     configuration.AddCommand<CheckCommand>("check")
         .WithDescription("Compare a run with the accepted baseline, or accept it with --accept.");
+    configuration.AddCommand<ReportCommand>("report")
+        .WithDescription("Write a self-contained HTML report for a run.");
     configuration.AddCommand<CheckCommand>("check")
         .WithDescription("Compare a run with the accepted baseline, or accept it with --accept.");
     configuration.AddCommand<ObserveCommand>("observe")
