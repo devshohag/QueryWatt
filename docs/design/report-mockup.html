@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="#2a78d6,#eb6834,#1baf7a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QueryWatt Report</title>
+<style>
+  /* ── tokens ─────────────────────────────────────────────────────────── */
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --surface-2:   #f4f3f0;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --hairline:    rgba(11,11,11,0.10);
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+
+    --series-1:    #2a78d6;
+    --good:        #0ca30c;
+    --good-text:   #006300;
+    --warning:     #fab219;
+    --serious:     #ec835a;
+    --critical:    #d03b3b;
+
+    --radius:      10px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:      #0d0d0d;
+      --surface:   #1a1a19;
+      --surface-2: #232321;
+      --ink:       #ffffff;
+      --ink-2:     #c3c2b7;
+      --ink-muted: #898781;
+      --hairline:  rgba(255,255,255,0.10);
+      --grid:      #2c2c2a;
+      --baseline:  #383835;
+      --series-1:  #3987e5;
+      --good-text: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:      #0d0d0d;
+    --surface:   #1a1a19;
+    --surface-2: #232321;
+    --ink:       #ffffff;
+    --ink-2:     #c3c2b7;
+    --ink-muted: #898781;
+    --hairline:  rgba(255,255,255,0.10);
+    --grid:      #2c2c2a;
+    --baseline:  #383835;
+    --series-1:  #3987e5;
+    --good-text: #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+
+  /* ── header ─────────────────────────────────────────────────────────── */
+  header.top {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--series-1);
+    display: grid; place-items: center; flex: none;
+  }
+  .brand .mark svg { display: block; }
+  .brand h1 { font-size: 17px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  .brand .sub { font-size: 12px; color: var(--ink-muted); margin-top: 1px; }
+
+  .runmeta { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--ink-2); }
+  .runmeta div { white-space: nowrap; }
+  .runmeta b { font-weight: 550; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .iconbtn {
+    font: inherit; font-size: 12px; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 8px; padding: 5px 10px; cursor: pointer;
+  }
+  .iconbtn:hover { color: var(--ink); }
+
+  /* ── verdict banner ─────────────────────────────────────────────────── */
+  .banner {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-left: 3px solid var(--critical);
+    margin-bottom: 18px;
+  }
+  .banner .big { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .banner .why { font-size: 13px; color: var(--ink-2); }
+
+  /* ── stat tiles ─────────────────────────────────────────────────────── */
+  .tiles {
+    display: grid; gap: 10px; margin-bottom: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  }
+  .tile {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: var(--radius); padding: 12px 14px;
+  }
+  .tile .k { font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--ink-muted); }
+  .tile .v { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin-top: 3px; }
+  .tile .n { font-size: 11px; color: var(--ink-muted); margin-top: 1px; }
+  .tile .v .unit { font-size: 13px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+
+  /* ── tabs ───────────────────────────────────────────────────────────── */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--hairline); margin-bottom: 14px; }
+  .tab {
+    font: inherit; font-size: 13px; font-weight: 550;
+    background: none; border: 0; border-bottom: 2px solid transparent;
+    color: var(--ink-muted); padding: 8px 12px; cursor: pointer; margin-bottom: -1px;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--series-1); }
+  .tab:hover { color: var(--ink); }
+  .tab .count {
+    font-size: 11px; font-weight: 500; color: var(--ink-muted);
+    margin-left: 5px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ── controls ───────────────────────────────────────────────────────── */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .chip {
+    font: inherit; font-size: 12px; cursor: pointer;
+    background: var(--surface); color: var(--ink-2);
+    border: 1px solid var(--hairline); border-radius: 999px;
+    padding: 4px 11px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip[aria-pressed="true"] { color: var(--ink); border-color: var(--baseline); background: var(--surface-2); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 99px; flex: none; }
+  .chip .c { font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+  .spacer { flex: 1 1 auto; }
+  select.sortsel {
+    font: inherit; font-size: 12px; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 8px; padding: 4px 8px;
+  }
+
+  /* ── query list ─────────────────────────────────────────────────────── */
+  .list { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius); overflow: hidden; }
+  .lhead, .row {
+    display: grid; align-items: center; gap: 12px;
+    grid-template-columns: 22px minmax(190px, 1.6fr) 96px 92px 82px 74px 96px;
+    padding: 9px 14px;
+  }
+  .lhead {
+    font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--ink-muted); border-bottom: 1px solid var(--hairline);
+    background: var(--surface-2);
+  }
+  .lhead .num, .row .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .row {
+    border-top: 1px solid var(--hairline); cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .row:first-of-type { border-top: 0; }
+  .row:hover { background: var(--surface-2); }
+  .row[aria-expanded="true"] { background: var(--surface-2); }
+
+  .vflag { display: grid; place-items: center; }
+  .vflag svg { display: block; }
+  .qname { min-width: 0; }
+  .qname .id { font-family: var(--mono); font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+  .qname .meta { font-size: 11px; color: var(--ink-muted); margin-top: 1px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .qname .meta code { font-family: var(--mono); font-size: 10.5px; }
+  .vlabel { font-size: 12px; font-weight: 550; }
+  .delta { font-size: 11px; display: block; color: var(--ink-muted); }
+  .delta.up { color: var(--critical); }
+  .delta.down { color: var(--good-text); }
+  .spark { display: block; }
+
+  /* ── detail ─────────────────────────────────────────────────────────── */
+  .detail {
+    border-top: 1px dashed var(--hairline);
+    padding: 4px 14px 18px 48px; background: var(--surface-2);
+  }
+  .detail h4 {
+    font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-muted); margin: 16px 0 7px;
+  }
+  table.metrics { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  table.metrics th {
+    text-align: right; font-size: 11px; font-weight: 500; color: var(--ink-muted);
+    padding: 3px 10px 6px 0; border-bottom: 1px solid var(--grid);
+  }
+  table.metrics th:first-child { text-align: left; }
+  table.metrics td { padding: 5px 10px 5px 0; text-align: right; font-size: 12.5px; }
+  table.metrics td:first-child { text-align: left; color: var(--ink-2); }
+  table.metrics tr + tr td { border-top: 1px solid var(--grid); }
+  table.metrics .pct.up { color: var(--critical); font-weight: 550; }
+  table.metrics .pct.down { color: var(--good-text); font-weight: 550; }
+  table.metrics .verd { text-align: right; font-size: 11px; }
+
+  pre.sql {
+    margin: 0; padding: 11px 13px; overflow-x: auto;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px;
+    font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--ink-2);
+  }
+  .planline { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 12.5px; }
+  .planline code { font-family: var(--mono); font-size: 12px; }
+  .planline .arrow { color: var(--ink-muted); }
+  .params { display: flex; flex-wrap: wrap; gap: 6px; }
+  .param {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 6px; padding: 2px 8px;
+  }
+  .note { font-size: 11.5px; color: var(--ink-muted); margin-top: 7px; }
+  .cmd {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 8px; padding: 8px 10px;
+  }
+  .cmd code { font-family: var(--mono); font-size: 12px; color: var(--ink-2); overflow-x: auto; flex: 1 1 auto; }
+  .grid2 { display: grid; gap: 18px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .grid2 { grid-template-columns: 1.15fr 1fr; } }
+
+  /* ── observe ────────────────────────────────────────────────────────── */
+  .scope { background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .scope > header {
+    display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+    padding: 11px 14px; border-bottom: 1px solid var(--hairline); background: var(--surface-2);
+  }
+  .scope > header .sid { font-family: var(--mono); font-size: 13px; font-weight: 550; }
+  .scope > header .agg { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .cmdrow {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: 16px minmax(160px,1fr) 52px 92px 74px 110px;
+    padding: 8px 14px; font-variant-numeric: tabular-nums; font-size: 12.5px;
+  }
+  .cmdrow + .cmdrow { border-top: 1px solid var(--hairline); }
+  .cmdrow .id { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+  .cmdrow .num { text-align: right; }
+  .cmdrow .tag {
+    font-size: 11px; font-weight: 550; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .bar { height: 5px; border-radius: 3px; background: var(--grid); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 3px; background: var(--series-1); }
+
+  /* ── footer ─────────────────────────────────────────────────────────── */
+  footer.bot {
+    margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--hairline);
+    display: grid; gap: 10px 26px; grid-template-columns: repeat(auto-fit, minmax(230px,1fr));
+    font-size: 11.5px; color: var(--ink-muted);
+  }
+  footer.bot b { font-weight: 550; color: var(--ink-2); display: block; margin-bottom: 2px; }
+  footer.bot code { font-family: var(--mono); font-size: 11px; }
+  .offline { margin-top: 14px; font-size: 11.5px; color: var(--ink-muted); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 14px 0 0; font-size: 11.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="mark">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 11.5 L5.5 6 L8.5 9 L14 2.5" stroke="#fff" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="5.5" cy="13.5" r="1.4" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <h1>QueryWatt</h1>
+        <div class="sub">Query efficiency report</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <div class="runmeta" id="runmeta"></div>
+      <button class="iconbtn" id="themebtn" type="button">Theme</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-tab="verify">Verify<span class="count" id="c-verify"></span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="observe">Observe<span class="count" id="c-observe"></span></button>
+  </div>
+
+  <!-- ══ VERIFY ══════════════════════════════════════════════════════════ -->
+  <section id="panel-verify">
+    <div class="controls" id="filters"></div>
+
+    <div class="list">
+      <div class="lhead">
+        <div></div>
+        <div>Query</div>
+        <div>Verdict</div>
+        <div class="num">Reads / row</div>
+        <div class="num">Reads</div>
+        <div class="num">Median</div>
+        <div class="num">Last 20 runs</div>
+      </div>
+      <div id="rows"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <!-- ══ OBSERVE ═════════════════════════════════════════════════════════ -->
+  <section id="panel-observe" class="hidden">
+    <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 14px">
+      Every command executed inside a measurement scope while the app ran. No baseline needed —
+      this is what your code actually asked the database to do.
+    </p>
+    <div id="scopes"></div>
+  </section>
+
+  <footer class="bot" id="footer"></footer>
+  <p class="offline">
+    Generated locally. This file is self-contained — no network requests, no data left this machine.
+  </p>
+</div>
+
+<script type="application/json" id="qw-data">
+{
+  "run": {
+    "generatedAt": "2026-09-18 11:24 (+06)",
+    "machine": "DEV-WS-04",
+    "baselineAge": "3 days",
+    "baselineCommit": "a91f4c2",
+    "environment": "SQL Server 2022 Developer · compat 160 · MAXDOP 4",
+    "environmentFingerprint": "env:7d41c9ab",
+    "datasetFingerprint": "data:3f80e15c",
+    "datasetStatus": "match",
+    "runs": 30,
+    "warmup": 5,
+    "instrumentation": "full"
+  },
+  "verdicts": {
+    "Regression":     { "label": "Regression",      "color": "var(--critical)", "icon": "up",    "rank": 0 },
+    "PlanRegression": { "label": "Plan regression", "color": "var(--critical)", "icon": "plan",  "rank": 1 },
+    "Suspect":        { "label": "Suspect",         "color": "var(--warning)",  "icon": "warn",  "rank": 2 },
+    "NewScenario":    { "label": "New scenario",    "color": "var(--series-1)", "icon": "plus",  "rank": 3 },
+    "Incomparable":   { "label": "Incomparable",    "color": "var(--ink-muted)","icon": "skip",  "rank": 4 },
+    "DataChange":     { "label": "Data change",     "color": "var(--ink-muted)","icon": "data",  "rank": 5 },
+    "Improved":       { "label": "Improved",        "color": "var(--good)",     "icon": "down",  "rank": 6 },
+    "Unchanged":      { "label": "Unchanged",       "color": "var(--ink-muted)","icon": "eq",    "rank": 7 }
+  },
+  "queries": [
+    {
+      "id": "catalog.product-search",
+      "scenario": "p[Keyword]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "Regression",
+      "metrics": [
+        { "name": "Reads / row",   "base": 2.1,  "cur": 18.4, "threshold": "20%", "verdict": "fail" },
+        { "name": "Logical reads", "base": 420,  "cur": 3680, "threshold": "20%", "verdict": "fail" },
+        { "name": "CPU (ms)",      "base": 6,    "cur": 52,   "threshold": "30%", "verdict": "fail" },
+        { "name": "Duration (ms)", "base": 14,   "cur": 96,   "threshold": "50%", "verdict": "fail" },
+        { "name": "Rows",          "base": 200,  "cur": 200,  "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": true, "from": "Index Seek (IX_Product_Name)", "to": "Clustered Index Scan (PK_Product)", "fromHash": "c1f7a9d4", "toHash": "8b02e77f" },
+      "cause": "IX_Product_Name was dropped in this change. Row count is identical, so the extra reads are not data growth.",
+      "params": ["@Keyword nvarchar(100)"],
+      "sql": "SELECT p.ProductId, p.Sku, p.Name, p.ListPrice, p.OnHand\nFROM   dbo.Product p\nWHERE  p.IsActive = 1\n  AND  p.Name LIKE @Keyword\nORDER BY p.Name;",
+      "history": [420,418,425,420,422,419,421,420,424,420,418,421,420,423,420,419,421,420,3675,3680]
+    },
+    {
+      "id": "reports.top-customers",
+      "scenario": "p[Year,MinimumSpend]",
+      "source": "EFCore", "commandType": "Text",
+      "verdict": "PlanRegression",
+      "metrics": [
+        { "name": "Reads / row",   "base": 88.2, "cur": 182.4, "threshold": "20%", "verdict": "fail" },
+        { "name": "Logical reads", "base": 4412, "cur": 9120,  "threshold": "20%", "verdict": "fail" },
+        { "name": "CPU (ms)",      "base": 31,   "cur": 77,    "threshold": "30%", "verdict": "fail" },
+        { "name": "Duration (ms)", "base": 46,   "cur": 108,   "threshold": "50%", "verdict": "fail" },
+        { "name": "Rows",          "base": 50,   "cur": 50,    "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": true, "from": "Hash Match (Aggregate) + Index Scan", "to": "Sort + Stream Aggregate + Table Scan", "fromHash": "44ab1092", "toHash": "0d9e5531" },
+      "cause": "The LINQ predicate wraps a column in a function (PlacedOn.Year), so no index is seekable. Same rows, worse plan.",
+      "params": ["@Year int", "@MinimumSpend decimal(18,2)"],
+      "sql": "SELECT [c].[CustomerId], [c].[DisplayName],\n       COUNT(*) AS [OrderCount], SUM([o].[TotalAmount]) AS [TotalSpend]\nFROM   [Order] AS [o]\nINNER JOIN [Customer] AS [c] ON [c].[CustomerId] = [o].[CustomerId]\nWHERE  DATEPART(year, [o].[PlacedOn]) = @Year\n  AND  [o].[StatusId] <> 9\nGROUP BY [c].[CustomerId], [c].[DisplayName]\nHAVING SUM([o].[TotalAmount]) >= @MinimumSpend\nORDER BY SUM([o].[TotalAmount]) DESC;",
+      "history": [4410,4415,4402,4412,4408,4420,4412,4409,4414,4412,4406,4412,4418,4412,4410,4413,4412,4411,9105,9120]
+    },
+    {
+      "id": "inventory.stock-alerts",
+      "scenario": "p[WarehouseId]",
+      "source": "EFCore", "commandType": "Text",
+      "verdict": "Suspect",
+      "metrics": [
+        { "name": "Reads / row",   "base": 15.8, "cur": 20.0, "threshold": "20%", "verdict": "warn" },
+        { "name": "Logical reads", "base": 1890, "cur": 9200, "threshold": "20%", "verdict": "info" },
+        { "name": "CPU (ms)",      "base": 12,   "cur": 44,   "threshold": "30%", "verdict": "info" },
+        { "name": "Duration (ms)", "base": 19,   "cur": 61,   "threshold": "50%", "verdict": "info" },
+        { "name": "Rows",          "base": 120,  "cur": 460,  "threshold": "10%", "verdict": "info" }
+      ],
+      "plan": { "changed": false, "from": "Index Seek (IX_Inventory_Warehouse)", "to": "Index Seek (IX_Inventory_Warehouse)", "fromHash": "91c30ab7", "toHash": "91c30ab7" },
+      "cause": "Rows grew 120 → 460, so raw reads are expected to rise. Reads per row still crept up 27% — worth a look, but not a build blocker.",
+      "params": ["@WarehouseId int"],
+      "sql": "SELECT i.Sku, i.OnHand, i.ReorderLevel,\n       i.OnHand - i.ReorderLevel AS Headroom\nFROM   dbo.Inventory i\nWHERE  i.WarehouseId = @WarehouseId\n  AND  i.OnHand < i.ReorderLevel;",
+      "history": [1885,1890,1878,1892,1890,1884,1890,1895,1890,1888,1891,1890,1886,1890,1893,1890,1889,1890,8940,9200]
+    },
+    {
+      "id": "reports.daily-revenue",
+      "scenario": "p[From,To]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "DataChange",
+      "metrics": [
+        { "name": "Reads / row",   "base": 41.0, "cur": 40.6, "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 1271, "cur": 3735, "threshold": "20%", "verdict": "info" },
+        { "name": "CPU (ms)",      "base": 9,    "cur": 26,   "threshold": "30%", "verdict": "info" },
+        { "name": "Duration (ms)", "base": 15,   "cur": 38,   "threshold": "50%", "verdict": "info" },
+        { "name": "Rows",          "base": 31,   "cur": 92,   "threshold": "10%", "verdict": "info" }
+      ],
+      "plan": { "changed": false, "from": "Index Seek (IX_Order_PlacedOn)", "to": "Index Seek (IX_Order_PlacedOn)", "fromHash": "7e11bb04", "toHash": "7e11bb04" },
+      "cause": "Rows tripled and reads tripled with them. Plan unchanged, reads per row flat — this is more data, not a regression.",
+      "params": ["@From datetime2", "@To datetime2"],
+      "sql": "SELECT CAST(o.PlacedOn AS date) AS Day,\n       COUNT(*) AS Orders, SUM(o.TotalAmount) AS Revenue\nFROM   dbo.[Order] o\nWHERE  o.PlacedOn >= @From AND o.PlacedOn < @To\nGROUP BY CAST(o.PlacedOn AS date)\nORDER BY Day;",
+      "history": [1268,1271,1265,1272,1270,1271,1269,1273,1271,1270,1266,1271,1274,1271,1268,1271,1272,1270,3700,3735]
+    },
+    {
+      "id": "catalog.product-search",
+      "scenario": "p[Keyword,CategoryId,InStockOnly]",
+      "source": "NHibernate", "commandType": "Text",
+      "verdict": "NewScenario",
+      "metrics": [
+        { "name": "Reads / row",   "base": null, "cur": 9.7,  "threshold": "20%", "verdict": "new" },
+        { "name": "Logical reads", "base": null, "cur": 1930, "threshold": "20%", "verdict": "new" },
+        { "name": "CPU (ms)",      "base": null, "cur": 18,   "threshold": "30%", "verdict": "new" },
+        { "name": "Duration (ms)", "base": null, "cur": 27,   "threshold": "50%", "verdict": "new" },
+        { "name": "Rows",          "base": null, "cur": 200,  "threshold": "10%", "verdict": "new" }
+      ],
+      "plan": { "changed": false, "from": null, "to": "Index Scan (IX_Product_Name) + Nested Loops", "fromHash": null, "toHash": "5ac8e120" },
+      "cause": "Three filters were supplied this time instead of one, so the parameter shape differs. Not compared against the single-filter baseline — recorded as its own scenario.",
+      "params": ["@Keyword nvarchar(100)", "@CategoryId int", "@InStockOnly bit"],
+      "sql": "select p0_.ProductId, p0_.Sku, p0_.Name, p0_.ListPrice\nfrom   Product p0_\nwhere  p0_.IsActive = 1\n  and  p0_.Name like ?\n  and  p0_.CategoryId = ?\n  and  p0_.OnHand > 0\norder by p0_.Name\noffset 0 rows fetch first 200 rows only;",
+      "history": [1930]
+    },
+    {
+      "id": "audit.recent-changes",
+      "scenario": "p[Since]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "Incomparable",
+      "metrics": [
+        { "name": "Reads / row",   "base": 3.2,  "cur": 4.1,   "threshold": "20%", "verdict": "skip" },
+        { "name": "Logical reads", "base": 640,  "cur": 1148,  "threshold": "20%", "verdict": "skip" },
+        { "name": "CPU (ms)",      "base": 5,    "cur": 11,    "threshold": "30%", "verdict": "skip" },
+        { "name": "Duration (ms)", "base": 8,    "cur": 17,    "threshold": "50%", "verdict": "skip" },
+        { "name": "Rows",          "base": 200,  "cur": 280,   "threshold": "10%", "verdict": "skip" }
+      ],
+      "plan": { "changed": false, "from": "Index Seek (IX_Audit_ChangedOn)", "to": "Index Seek (IX_Audit_ChangedOn)", "fromHash": "2b74c8ee", "toHash": "2b74c8ee" },
+      "cause": "Dataset fingerprint moved for dbo.AuditLog (1.2M → 4.7M rows) and an index definition changed. No verdict issued — the two runs are not measuring the same database.",
+      "params": ["@Since datetime2"],
+      "sql": "SELECT TOP (280) a.AuditLogId, a.Entity, a.Action, a.ChangedOn, a.ChangedBy\nFROM   dbo.AuditLog a\nWHERE  a.ChangedOn >= @Since\nORDER BY a.ChangedOn DESC;",
+      "history": [638,640,642,640,639,641,640,637,640,643,640,638,641,640,640,639,642,640,1102,1148]
+    },
+    {
+      "id": "orders.pending-by-customer",
+      "scenario": "p[CustomerId,PlacedAfter]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "Improved",
+      "metrics": [
+        { "name": "Reads / row",   "base": 2.3,  "cur": 1.9,  "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 84,   "cur": 71,   "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 4,    "cur": 3,    "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 11,   "cur": 9,    "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows",          "base": 37,   "cur": 37,   "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": true, "from": "Index Seek + Key Lookup", "to": "Index Seek (IX_Order_Customer_PlacedOn covering)", "fromHash": "3fa90c17", "toHash": "ce4471a8" },
+      "cause": "The new covering index removed the key lookup. Fewer reads for identical rows.",
+      "params": ["@CustomerId uniqueidentifier", "@PlacedAfter datetime2"],
+      "sql": "SELECT o.OrderId, o.OrderNumber, o.PlacedOn,\n       o.TotalAmount, o.StatusId, o.PromisedShipOn\nFROM   dbo.[Order] o\nWHERE  o.CustomerId = @CustomerId\n  AND  o.PlacedOn >= @PlacedAfter\n  AND  o.StatusId IN (1, 2)\nORDER BY o.PlacedOn DESC;",
+      "history": [84,85,84,83,84,86,84,84,85,84,83,84,84,85,84,84,83,84,72,71]
+    },
+    {
+      "id": "checkout.prepare",
+      "scenario": "p[CartId]",
+      "source": "Dapper", "commandType": "Text",
+      "verdict": "Improved",
+      "metrics": [
+        { "name": "Reads / row",   "base": 402.0, "cur": 251.1, "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 14802, "cur": 9240,  "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 74,    "cur": 48,    "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 96,    "cur": 63,    "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows",          "base": 37,    "cur": 37,    "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": false, "from": "Nested Loops + Index Seek", "to": "Nested Loops + Index Seek", "fromHash": "aa20f331", "toHash": "aa20f331" },
+      "cause": "The availability check was folded into one round trip instead of one per SKU.",
+      "params": ["@CartId uniqueidentifier"],
+      "sql": "SELECT c.CartId, c.ShipToZip, c.Weight,\n       l.CartLineId, l.Sku, l.Quantity, l.UnitPrice\nFROM   dbo.Cart c\nJOIN   dbo.CartLine l ON l.CartId = c.CartId\nWHERE  c.CartId = @CartId;",
+      "history": [14790,14802,14811,14802,14795,14802,14808,14802,14799,14802,14804,14802,14797,14802,14802,14806,14802,14800,9310,9240]
+    },
+    {
+      "id": "orders.detail-with-lines",
+      "scenario": "p[OrderId]",
+      "source": "Dapper", "commandType": "Text",
+      "verdict": "Unchanged",
+      "metrics": [
+        { "name": "Reads / row",   "base": 5.4, "cur": 5.4, "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 119, "cur": 121, "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 2,   "cur": 2,   "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 6,   "cur": 6,   "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows",          "base": 22,  "cur": 22,  "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": false, "from": "Index Seek + Nested Loops", "to": "Index Seek + Nested Loops", "fromHash": "6d1180ca", "toHash": "6d1180ca" },
+      "cause": null,
+      "params": ["@OrderId bigint"],
+      "sql": "SELECT o.OrderId, o.OrderNumber, o.TotalAmount, o.CustomerId,\n       l.OrderLineId, l.Sku, l.Quantity, l.UnitPrice\nFROM   dbo.[Order] o\nJOIN   dbo.OrderLine l ON l.OrderId = o.OrderId\nWHERE  o.OrderId = @OrderId;",
+      "history": [118,119,120,119,118,121,119,119,120,118,119,121,119,118,120,119,119,120,120,121]
+    },
+    {
+      "id": "orders.close-fulfilled",
+      "scenario": "p[WarehouseId,Cutoff]",
+      "source": "AdoNet", "commandType": "StoredProcedure",
+      "verdict": "Unchanged",
+      "metrics": [
+        { "name": "Reads / row",   "base": 7.6,  "cur": 7.6,  "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 9150, "cur": 9180, "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 61,   "cur": 62,   "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 140,  "cur": 143,  "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows affected", "base": 1204, "cur": 1204, "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": false, "from": null, "to": null, "fromHash": null, "toHash": null },
+      "cause": "Write command — plan capture skipped by design. QueryWatt never re-executes a command that writes.",
+      "params": ["@WarehouseId int", "@Cutoff datetime2", "@ClosedCount int OUTPUT"],
+      "sql": "EXEC dbo.usp_CloseFulfilledOrders\n     @WarehouseId, @Cutoff, @ClosedCount OUTPUT;",
+      "history": [9148,9150,9155,9150,9147,9152,9150,9149,9153,9150,9146,9150,9154,9150,9151,9150,9148,9150,9176,9180]
+    },
+    {
+      "id": "customers.by-email",
+      "scenario": "p[Email]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "Unchanged",
+      "metrics": [
+        { "name": "Reads / row",   "base": 4.0, "cur": 4.0, "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 4,   "cur": 4,   "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 0,   "cur": 0,   "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 1,   "cur": 1,   "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows",          "base": 1,   "cur": 1,   "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": false, "from": "Index Seek (UQ_Customer_Email)", "to": "Index Seek (UQ_Customer_Email)", "fromHash": "17c7f2b9", "toHash": "17c7f2b9" },
+      "cause": null,
+      "params": ["@Email nvarchar(256)"],
+      "sql": "SELECT c.CustomerId, c.DisplayName, c.Email, c.IsActive\nFROM   dbo.Customer c\nWHERE  c.Email = @Email;",
+      "history": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4]
+    },
+    {
+      "id": "shipping.rate-lookup",
+      "scenario": "p[Zip,Weight]",
+      "source": "AdoNet", "commandType": "Text",
+      "verdict": "Unchanged",
+      "metrics": [
+        { "name": "Reads / row",   "base": 412.0, "cur": 414.0, "threshold": "20%", "verdict": "pass" },
+        { "name": "Logical reads", "base": 412,   "cur": 414,   "threshold": "20%", "verdict": "pass" },
+        { "name": "CPU (ms)",      "base": 5,     "cur": 5,     "threshold": "30%", "verdict": "pass" },
+        { "name": "Duration (ms)", "base": 9,     "cur": 9,     "threshold": "50%", "verdict": "pass" },
+        { "name": "Rows",          "base": 1,     "cur": 1,     "threshold": "10%", "verdict": "pass" }
+      ],
+      "plan": { "changed": false, "from": "Index Scan (IX_ShippingRate_Zip)", "to": "Index Scan (IX_ShippingRate_Zip)", "fromHash": "e9034ab1", "toHash": "e9034ab1" },
+      "cause": "412 reads for a single row is high in absolute terms, but it matches baseline — QueryWatt reports regressions, not code review.",
+      "params": ["@Zip char(5)", "@Weight decimal(9,2)"],
+      "sql": "SELECT TOP (1) r.RateId, r.Amount, r.Carrier\nFROM   dbo.ShippingRate r\nWHERE  r.Zip = @Zip AND @Weight BETWEEN r.MinWeight AND r.MaxWeight\nORDER BY r.Amount;",
+      "history": [410,412,413,412,411,414,412,412,413,411,412,414,412,410,413,412,412,413,413,414]
+    }
+  ],
+  "scopes": [
+    {
+      "id": "GET /orders",
+      "commands": 76, "reads": 25792, "durationMs": 476,
+      "children": [
+        { "id": "orders.pending-by-customer", "calls": 1,  "reads": 112,   "durationMs": 8,   "flag": null },
+        { "id": "orders.line-items",          "calls": 37, "reads": 24180, "durationMs": 410, "flag": "N+1" },
+        { "id": "catalog.product-name",       "calls": 37, "reads": 1406,  "durationMs": 52,  "flag": "N+1" },
+        { "id": "shipping.status",            "calls": 1,  "reads": 94,    "durationMs": 6,   "flag": null }
+      ]
+    },
+    {
+      "id": "GET /reports/top-customers",
+      "commands": 1, "reads": 9120, "durationMs": 108,
+      "children": [
+        { "id": "reports.top-customers", "calls": 1, "reads": 9120, "durationMs": 108, "flag": null }
+      ]
+    },
+    {
+      "id": "POST /checkout/prepare",
+      "commands": 3, "reads": 9746, "durationMs": 79,
+      "children": [
+        { "id": "checkout.prepare",       "calls": 1, "reads": 9240, "durationMs": 63, "flag": null },
+        { "id": "inventory.availability", "calls": 1, "reads": 412,  "durationMs": 11, "flag": null },
+        { "id": "shipping.rate-lookup",   "calls": 1, "reads": 94,   "durationMs": 5,  "flag": null }
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  const D = JSON.parse(document.getElementById("qw-data").textContent);
+  const V = D.verdicts;
+  const $ = (id) => document.getElementById(id);
+
+  const nf = (n) => n === null || n === undefined ? "—" : n.toLocaleString("en-US");
+  const nf1 = (n) => n === null || n === undefined ? "—"
+    : (Math.abs(n) >= 100 ? Math.round(n).toLocaleString("en-US") : n.toFixed(1));
+
+  /* ── verdict icons: shape + label, never colour alone ──────────────── */
+  function icon(kind, color, size) {
+    const s = size || 13, c = color || "currentColor";
+    const P = {
+      up:   '<path d="M7 2.5 L11.5 9 H2.5 Z" fill="C"/>',
+      plan: '<path d="M2.5 4 h4 M2.5 10 h4 M9 2.5 v9" stroke="C" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="11" cy="7" r="1.6" fill="C"/>',
+      warn: '<path d="M7 2.2 L12.2 11.2 H1.8 Z" fill="none" stroke="C" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 5.6 v2.6" stroke="C" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.9" r="0.85" fill="C"/>',
+      plus: '<path d="M7 2.6 v8.8 M2.6 7 h8.8" stroke="C" stroke-width="1.7" stroke-linecap="round"/>',
+      skip: '<circle cx="7" cy="7" r="5" fill="none" stroke="C" stroke-width="1.5"/><path d="M4.4 4.4 L9.6 9.6" stroke="C" stroke-width="1.5" stroke-linecap="round"/>',
+      data: '<ellipse cx="7" cy="4" rx="4.4" ry="1.8" fill="none" stroke="C" stroke-width="1.4"/><path d="M2.6 4 v6 c0 1 2 1.8 4.4 1.8 s4.4-.8 4.4-1.8 V4" fill="none" stroke="C" stroke-width="1.4"/>',
+      down: '<path d="M7 11.5 L2.5 5 h9 Z" fill="C"/>',
+      eq:   '<path d="M3 5.6 h8 M3 8.4 h8" stroke="C" stroke-width="1.6" stroke-linecap="round"/>'
+    };
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 14 14" aria-hidden="true">'
+         + P[kind].replace(/C/g, c) + "</svg>";
+  }
+
+  /* ── sparkline: one series, 2px line, end marker ───────────────────── */
+  function spark(vals, color) {
+    if (!vals || vals.length < 2) {
+      return '<span style="font-size:11px;color:var(--ink-muted)">first run</span>';
+    }
+    const w = 88, h = 24, pad = 3;
+    const min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    const span = (max - min) || 1;
+    const x = (i) => pad + i * (w - pad * 2) / (vals.length - 1);
+    const y = (v) => h - pad - ((v - min) / span) * (h - pad * 2);
+    const pts = vals.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    const lx = x(vals.length - 1), ly = y(vals[vals.length - 1]);
+    return '<svg class="spark" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">'
+         + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2" '
+         + 'stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>'
+         + '<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="2.6" fill="' + color + '"/></svg>';
+  }
+
+  function pct(base, cur) {
+    if (base === null || base === undefined || base === 0) return null;
+    return ((cur - base) / base) * 100;
+  }
+  function pctText(p) {
+    if (p === null) return "—";
+    const s = p > 0 ? "+" : "";
+    return s + (Math.abs(p) >= 100 ? Math.round(p) : p.toFixed(1)) + "%";
+  }
+
+  /* ── header meta ───────────────────────────────────────────────────── */
+  const r = D.run;
+  $("runmeta").innerHTML =
+      '<div>' + r.generatedAt + '</div>'
+    + '<div>baseline <b>' + r.baselineCommit + '</b> · ' + r.baselineAge + ' old</div>'
+    + '<div><b>' + r.runs + '</b> runs · <b>' + r.warmup + '</b> warm-up</div>';
+
+  /* ── banner + tiles ────────────────────────────────────────────────── */
+  const counts = {};
+  Object.keys(V).forEach((k) => counts[k] = 0);
+  D.queries.forEach((q) => counts[q.verdict]++);
+
+  const blocking = counts.Regression + counts.PlanRegression;
+  const b = $("banner");
+  b.style.borderLeftColor = blocking ? "var(--critical)" : "var(--good)";
+  b.innerHTML =
+      icon(blocking ? "up" : "down", blocking ? "var(--critical)" : "var(--good)", 22)
+    + '<div><div class="big">' + (blocking
+        ? blocking + " regression" + (blocking > 1 ? "s" : "")
+        : "No regressions") + '</div>'
+    + '<div class="why">' + (blocking
+        ? "Row count held steady while cost rose — data growth does not explain these."
+        : "Every measured query is within its threshold.") + '</div></div>';
+
+  const totalReads = D.queries.reduce((a, q) => {
+    const m = q.metrics.find((x) => x.name === "Logical reads");
+    return a + (m ? m.cur : 0);
+  }, 0);
+
+  $("tiles").innerHTML = [
+    { k: "Queries measured", v: D.queries.length, n: r.instrumentation + " instrumentation" },
+    { k: "Regressions", v: blocking, n: "reads or plan", c: blocking ? "var(--critical)" : null },
+    { k: "Improved", v: counts.Improved, n: "cheaper than baseline", c: counts.Improved ? "var(--good-text)" : null },
+    { k: "Needs a look", v: counts.Suspect + counts.NewScenario + counts.Incomparable, n: "suspect · new · incomparable" },
+    { k: "Logical reads", v: (totalReads / 1000).toFixed(1), unit: "k", n: "this run, all queries" }
+  ].map((t) =>
+      '<div class="tile"><div class="k">' + t.k + '</div>'
+    + '<div class="v"' + (t.c ? ' style="color:' + t.c + '"' : "") + '>' + nf(t.v)
+    + (t.unit ? '<span class="unit">' + t.unit + '</span>' : "") + '</div>'
+    + '<div class="n">' + t.n + '</div></div>'
+  ).join("");
+
+  $("c-verify").textContent = D.queries.length;
+  $("c-observe").textContent = D.scopes.length;
+
+  /* ── filters + legend ──────────────────────────────────────────────── */
+  const active = new Set();
+  const order = Object.keys(V).sort((a, c) => V[a].rank - V[c].rank);
+
+  $("filters").innerHTML =
+      order.filter((k) => counts[k] > 0).map((k) =>
+        '<button class="chip" type="button" data-v="' + k + '" aria-pressed="false">'
+        + '<span class="dot" style="background:' + V[k].color + '"></span>'
+        + V[k].label + ' <span class="c">' + counts[k] + '</span></button>').join("")
+    + '<span class="spacer"></span>'
+    + '<select class="sortsel" id="sort">'
+    + '<option value="verdict">Sort: verdict</option>'
+    + '<option value="rpr">Sort: reads / row change</option>'
+    + '<option value="reads">Sort: logical reads</option>'
+    + '<option value="dur">Sort: median duration</option>'
+    + '<option value="name">Sort: name</option>'
+    + '</select>';
+
+  $("legend").innerHTML = order.map((k) =>
+    '<span>' + icon(V[k].icon, V[k].color) + V[k].label + '</span>').join("");
+
+  /* ── rows ──────────────────────────────────────────────────────────── */
+  const open = new Set();
+
+  function sortQueries(list, mode) {
+    const c = list.slice();
+    const get = (q, name) => {
+      const m = q.metrics.find((x) => x.name === name);
+      return m ? m.cur : 0;
+    };
+    if (mode === "verdict") c.sort((a, b2) =>
+      (V[a.verdict].rank - V[b2.verdict].rank)
+      || (get(b2, "Logical reads") - get(a, "Logical reads")));
+    if (mode === "rpr") c.sort((a, b2) => {
+      const pa = pct(a.metrics[0].base, a.metrics[0].cur) || 0;
+      const pb = pct(b2.metrics[0].base, b2.metrics[0].cur) || 0;
+      return pb - pa;
+    });
+    if (mode === "reads") c.sort((a, b2) => get(b2, "Logical reads") - get(a, "Logical reads"));
+    if (mode === "dur") c.sort((a, b2) => get(b2, "Duration (ms)") - get(a, "Duration (ms)"));
+    if (mode === "name") c.sort((a, b2) => a.id.localeCompare(b2.id) || a.scenario.localeCompare(b2.scenario));
+    return c;
+  }
+
+  function detailHtml(q) {
+    const p = q.plan;
+    const planBlock = (p.to === null)
+      ? '<div class="planline" style="color:var(--ink-muted)">Not captured — write command</div>'
+      : (p.changed
+          ? '<div class="planline">' + icon("plan", "var(--critical)")
+            + '<code>' + p.from + '</code><span class="arrow">→</span>'
+            + '<code style="color:var(--critical)">' + p.to + '</code></div>'
+            + '<div class="note">fingerprint <code>' + (p.fromHash || "—") + '</code> → <code>' + p.toHash + '</code></div>'
+          : '<div class="planline">' + icon("eq", "var(--ink-muted)")
+            + '<code>' + p.to + '</code></div>'
+            + '<div class="note">fingerprint <code>' + p.toHash + '</code> — unchanged</div>');
+
+    const rows = q.metrics.map((m) => {
+      const p2 = pct(m.base, m.cur);
+      const cls = m.verdict === "fail" ? "up" : (m.verdict === "pass" && p2 !== null && p2 < -1 ? "down" : "");
+      const vlab = { fail: "over threshold", pass: "within", warn: "watch", info: "not gating", new: "no baseline", skip: "not compared" }[m.verdict];
+      const vcol = { fail: "var(--critical)", pass: "var(--good-text)", warn: "var(--warning)", info: "var(--ink-muted)", new: "var(--series-1)", skip: "var(--ink-muted)" }[m.verdict];
+      return '<tr><td>' + m.name + '</td>'
+        + '<td>' + nf1(m.base) + '</td>'
+        + '<td style="font-weight:550">' + nf1(m.cur) + '</td>'
+        + '<td class="pct ' + cls + '">' + pctText(p2) + '</td>'
+        + '<td style="color:var(--ink-muted)">' + m.threshold + '</td>'
+        + '<td class="verd" style="color:' + vcol + '">' + vlab + '</td></tr>';
+    }).join("");
+
+    const cmd = q.verdict === "NewScenario"
+      ? 'dotnet querywatt baseline --accept-new "' + q.id + '"'
+      : 'dotnet querywatt baseline --accept "' + q.id + '" --scenario "' + q.scenario + '"';
+
+    return '<div class="detail">'
+      + (q.cause ? '<h4>What happened</h4><div style="font-size:12.5px;color:var(--ink-2);max-width:78ch">' + q.cause + '</div>' : "")
+      + '<h4>Metrics</h4>'
+      + '<table class="metrics"><tr><th>Metric</th><th>Baseline</th><th>This run</th><th>Change</th><th>Threshold</th><th style="text-align:right">Verdict</th></tr>'
+      + rows + '</table>'
+      + '<div class="grid2">'
+      +   '<div><h4>Execution plan</h4>' + planBlock + '</div>'
+      +   '<div><h4>Parameters</h4><div class="params">'
+      +     q.params.map((x) => '<span class="param">' + x + '</span>').join("")
+      +   '</div><div class="note">Names and types only — QueryWatt never records parameter values.</div></div>'
+      + '</div>'
+      + '<h4>Command</h4><pre class="sql">' + q.sql.replace(/</g, "&lt;") + '</pre>'
+      + '<h4>Accept this as the new baseline</h4>'
+      + '<div class="cmd"><code>' + cmd + '</code>'
+      + '<button class="iconbtn" type="button" data-copy="' + cmd.replace(/"/g, "&quot;") + '">Copy</button></div>'
+      + '</div>';
+  }
+
+  function render() {
+    const mode = $("sort").value;
+    const shown = sortQueries(
+      D.queries.filter((q) => active.size === 0 || active.has(q.verdict)), mode);
+
+    $("rows").innerHTML = shown.map((q, i) => {
+      const v = V[q.verdict];
+      const rpr = q.metrics[0], reads = q.metrics.find((m) => m.name === "Logical reads");
+      const dur = q.metrics.find((m) => m.name === "Duration (ms)");
+      const pr = pct(rpr.base, rpr.cur);
+      const dcls = pr === null ? "" : (pr > 1 ? "up" : (pr < -1 ? "down" : ""));
+      const sparkColor = (q.verdict === "Regression" || q.verdict === "PlanRegression")
+        ? "var(--critical)" : (q.verdict === "Improved" ? "var(--good)" : "var(--series-1)");
+      const key = q.id + "|" + q.scenario;
+
+      return '<div class="row" role="button" tabindex="0" data-key="' + key + '" aria-expanded="' + open.has(key) + '">'
+        + '<div class="vflag" title="' + v.label + '">' + icon(v.icon, v.color, 14) + '</div>'
+        + '<div class="qname"><div class="id">' + q.id + '</div>'
+        +   '<div class="meta"><code>' + q.scenario + '</code><span>' + q.source + '</span>'
+        +   (q.commandType === "StoredProcedure" ? '<span>procedure</span>' : "") + '</div></div>'
+        + '<div class="vlabel" style="color:' + v.color + '">' + v.label + '</div>'
+        + '<div class="num">' + nf1(rpr.cur) + '<span class="delta ' + dcls + '">' + pctText(pr) + '</span></div>'
+        + '<div class="num">' + nf(reads.cur) + '</div>'
+        + '<div class="num">' + nf(dur.cur) + ' ms</div>'
+        + '<div class="num">' + spark(q.history, sparkColor) + '</div>'
+        + '</div>'
+        + (open.has(key) ? detailHtml(q) : "");
+    }).join("");
+  }
+
+  /* ── observe ───────────────────────────────────────────────────────── */
+  $("scopes").innerHTML = D.scopes.map((s) => {
+    const max = Math.max.apply(null, s.children.map((c) => c.reads));
+    return '<div class="scope"><header>'
+      + '<span class="sid">' + s.id + '</span>'
+      + '<span class="agg">' + nf(s.commands) + ' commands · ' + nf(s.reads) + ' reads · ' + s.durationMs + ' ms</span>'
+      + '</header>'
+      + s.children.map((c) =>
+          '<div class="cmdrow">'
+          + '<div>' + (c.flag ? icon("warn", "var(--warning)", 14) : "") + '</div>'
+          + '<div class="id">' + c.id + '</div>'
+          + '<div class="num" style="color:var(--ink-2)">' + c.calls + '×</div>'
+          + '<div class="num">' + nf(c.reads) + '</div>'
+          + '<div class="num" style="color:var(--ink-2)">' + c.durationMs + ' ms</div>'
+          + '<div>' + (c.flag
+              ? '<span class="tag" style="color:var(--warning)">' + c.flag + ' — ' + c.calls + ' calls in one scope</span>'
+              : '<div class="bar"><i style="width:' + Math.max(3, (c.reads / max) * 100).toFixed(0) + '%"></i></div>')
+          + '</div></div>').join("")
+      + '</div>';
+  }).join("");
+
+  /* ── footer ────────────────────────────────────────────────────────── */
+  $("footer").innerHTML = [
+    ["Environment", r.environment + '<br><code>' + r.environmentFingerprint + '</code>'],
+    ["Dataset", (r.datasetStatus === "match"
+        ? "fingerprint matches baseline"
+        : "fingerprint drifted — some verdicts withheld")
+      + '<br><code>' + r.datasetFingerprint + '</code>'],
+    ["Machine", r.machine + '<br>' + r.generatedAt],
+    ["Baseline", 'committed at <code>' + r.baselineCommit + '</code><br>querywatt/baseline.json']
+  ].map((x) => '<div><b>' + x[0] + '</b>' + x[1] + '</div>').join("");
+
+  /* ── events ────────────────────────────────────────────────────────── */
+  document.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip[data-v]");
+    if (chip) {
+      const k = chip.dataset.v;
+      if (active.has(k)) { active.delete(k); chip.setAttribute("aria-pressed", "false"); }
+      else { active.add(k); chip.setAttribute("aria-pressed", "true"); }
+      render(); return;
+    }
+    const copy = e.target.closest("[data-copy]");
+    if (copy) {
+      const t = copy.dataset.copy;
+      if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+      copy.textContent = "Copied";
+      setTimeout(() => { copy.textContent = "Copy"; }, 1400);
+      return;
+    }
+    const row = e.target.closest(".row[data-key]");
+    if (row) {
+      const k = row.dataset.key;
+      if (open.has(k)) open.delete(k); else open.add(k);
+      render(); return;
+    }
+    const tab = e.target.closest(".tab");
+    if (tab) {
+      document.querySelectorAll(".tab").forEach((t) =>
+        t.setAttribute("aria-selected", String(t === tab)));
+      $("panel-verify").classList.toggle("hidden", tab.dataset.tab !== "verify");
+      $("panel-observe").classList.toggle("hidden", tab.dataset.tab !== "observe");
+      return;
+    }
+    if (e.target.closest("#themebtn")) {
+      const cur = document.documentElement.getAttribute("data-theme");
+      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const next = cur ? (cur === "dark" ? "light" : "dark") : (dark ? "light" : "dark");
+      document.documentElement.setAttribute("data-theme", next);
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const row = e.target.closest && e.target.closest(".row[data-key]");
+    if (!row) return;
+    e.preventDefault();
+    const k = row.dataset.key;
+    if (open.has(k)) open.delete(k); else open.add(k);
+    render();
+  });
+
+  $("sort").addEventListener("change", render);
+
+  render();
+})();
+</script>
+</body>
+</html>
